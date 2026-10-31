@@ -1,0 +1,578 @@
+<!-- ... existing code ... -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Sistem Penjejak Pembelian Telur - iPhone 17 Pro View</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Chart.js untuk Carta Pie/Donut -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Font Google: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', 'SF Pro Display', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Penyesuaian Safe Area iOS iPhone */
+        .safe-top {
+            padding-top: max(env(safe-area-inset-top), 12px);
+        }
+        .safe-bottom {
+            padding-bottom: max(env(safe-area-inset-bottom), 16px);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 4px;
+            height: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        /* Gaya Rangka Peranti iPhone 17 Pro pada Skrin Lebar */
+        @media (min-width: 640px) {
+            .iphone-frame {
+                max-width: 402px;
+                min-height: 874px;
+                border-radius: 54px;
+                box-shadow: 0 25px 60px -15px rgba(15, 23, 42, 0.3), 0 0 0 12px #1e293b, 0 0 0 14px #475569;
+                margin: 24px auto;
+                overflow: hidden;
+                position: relative;
+            }
+            .dynamic-island-pill {
+                display: flex !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 sm:py-6 text-slate-800 antialiased flex flex-col items-center justify-start min-h-screen">
+
+    <!-- Container Utama: Bersaiz Tepat iPhone 17 Pro (402px lebar logikal) -->
+    <div id="iphoneContainer" class="iphone-frame bg-slate-50 w-full flex flex-col min-h-screen sm:min-h-[874px] relative overflow-hidden transition-all duration-300">
+        
+        <!-- Bar Status Atas & Dynamic Island Simulasi (Khas iPhone) -->
+        <div class="hidden dynamic-island-pill w-full pt-3 pb-2 px-7 bg-white justify-between items-center text-xs font-semibold text-slate-800 select-none z-40 border-b border-slate-100">
+            <span class="text-[13px] font-bold tracking-tight">9:41</span>
+            <!-- Dynamic Island Shape -->
+            <div class="h-6 w-28 bg-black rounded-full flex items-center justify-end px-2 gap-1.5 shadow-inner">
+                <div class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-700"></div>
+                <div class="w-2 h-2 rounded-full bg-emerald-500/80 animate-pulse"></div>
+            </div>
+            <div class="flex items-center gap-1.5 text-slate-700">
+                <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+                <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                <i data-lucide="battery-charging" class="w-4 h-4 text-emerald-600"></i>
+            </div>
+        </div>
+
+        <!-- Header Ringkas iOS Style -->
+        <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 py-3 safe-top">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 text-white flex items-center justify-center shadow-md shadow-amber-200 shrink-0">
+                        <i data-lucide="egg" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-none">
+                            Rekod Telur
+                        </h1>
+                        <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.2 rounded-md">Bajet RM 1,650</span>
+                    </div>
+                </div>
+
+                <!-- Butang Sheet & Aksi Pantas -->
+                <div class="flex items-center gap-1">
+                    <button onclick="openGoogleSheetModal()" class="p-2 rounded-xl text-emerald-700 hover:bg-emerald-50 transition" title="Pautkan Google Sheet">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="fetchFromGoogleSheet()" id="fetchSheetBtn" class="p-2 rounded-xl text-sky-700 hover:bg-sky-50 transition" title="Tarik dari Sheet">
+                        <i data-lucide="cloud-download" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="syncAllToGoogleSheet()" id="syncAllBtn" class="p-2 rounded-xl text-amber-600 hover:bg-amber-50 transition" title="Sync ke Sheet">
+                        <i data-lucide="cloud-upload" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Kandungan Utama (Skrol Menegak Lancar) -->
+        <main class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-28">
+            
+            <!-- Status Amaran Had Bajet (Auto-Muncul) -->
+            <div id="budgetAlertBanner" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-3 flex items-center justify-between gap-2.5">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0"></i>
+                    <p class="text-[11px] font-bold text-rose-800 leading-tight" id="budgetAlertText">Baki bajet kritikal!</p>
+                </div>
+                <button onclick="document.getElementById('budgetAlertBanner').classList.add('hidden')" class="text-rose-400 p-1">
+                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
+                </button>
+            </div>
+
+            <!-- Kad Baki Bajet Utama (Hero Widget) -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-4 text-white shadow-lg relative overflow-hidden">
+                <div class="flex items-center justify-between text-slate-300 text-xs font-medium">
+                    <span>Baki Bajet Bersih</span>
+                    <span class="text-[10px] bg-slate-700/80 px-2 py-0.5 rounded-full text-slate-300">Asal: RM 1,650</span>
+                </div>
+                <div class="mt-1 flex items-baseline justify-between">
+                    <h2 id="metricBalance" class="text-2xl font-black text-white tracking-tight">RM 1,650.00</h2>
+                    <span id="budgetUsagePercent" class="text-xs font-bold text-amber-400">0% diguna</span>
+                </div>
+
+                <!-- Progress Bar Penggunaan -->
+                <div class="w-full h-2 bg-slate-700/70 rounded-full mt-3 overflow-hidden flex">
+                    <div id="progressPaid" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
+                    <div id="progressUnpaid" class="bg-amber-400 h-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-700/60 text-[11px]">
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span class="text-slate-300">Telah Claim:</span>
+                        <strong id="progressPaidLabel" class="text-emerald-300 ml-auto font-bold">RM 0.00</strong>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <span class="text-slate-300">Belum Claim:</span>
+                        <strong id="progressUnpaidLabel" class="text-amber-300 ml-auto font-bold">RM 0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2 Kad Metrik Pantas (Grid Berkembar) -->
+            <div class="grid grid-cols-2 gap-3">
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-xs">
+                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase">
+                        <span>Jumlah Telur</span>
+                        <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-500"></i>
+                    </div>
+                    <p id="metricTotalQuantity" class="text-lg font-black text-slate-800 mt-1">0</p>
+                    <p id="metricAvgPrice" class="text-[10px] text-slate-400 mt-0.5 truncate">Purata: RM 0.00</p>
+                </div>
+
+                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-xs">
+                    <div class="flex items-center justify-between text-[11px] font-bold text-amber-600 uppercase">
+                        <span>Belum Claim</span>
+                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-500"></i>
+                    </div>
+                    <p id="metricUnpaid" class="text-lg font-black text-amber-600 mt-1">RM 0.00</p>
+                    <p id="metricUnpaidCount" class="text-[10px] text-slate-400 mt-0.5">0 transaksi</p>
+                </div>
+            </div>
+
+            <!-- Tab 1: Borang Key-In (Dikemaskan untuk Skrin Sentuh) -->
+            <section id="sectionForm" class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3.5">
+                
+                <!-- Notis Mod Suntingan (Bila edit) -->
+                <div id="editingBanner" class="hidden p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-800">
+                    <span class="font-semibold flex items-center gap-1.5 truncate">
+                        <i data-lucide="pencil" class="w-3.5 h-3.5 text-indigo-600"></i>
+                        Edit: <span id="editingRecordId" class="font-mono"></span>
+                    </span>
+                    <button onclick="cancelEditing()" class="text-indigo-600 underline font-bold text-[11px]">Batal</button>
+                </div>
+
+                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5" id="formTitleText">
+                        <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
+                        Key-In Pembelian Telur
+                    </h3>
+                    <span class="text-[10px] text-slate-400">Sentuh untuk isi</span>
+                </div>
+
+                <form id="eggPurchaseForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
+                    <input type="hidden" id="editHiddenId" value="">
+
+                    <!-- Tarikh -->
+                    <div>
+                        <label for="purchaseDate" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                            Tarikh Pembelian
+                        </label>
+                        <input 
+                            type="date" 
+                            id="purchaseDate" 
+                            required 
+                            class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-medium cursor-pointer"
+                        >
+                    </div>
+
+                    <!-- Kuantiti & Unit -->
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label for="quantity" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Kuantiti
+                            </label>
+                            <input 
+                                type="number" 
+                                id="quantity" 
+                                min="1" 
+                                step="1" 
+                                placeholder="Cth: 10" 
+                                required 
+                                oninput="calculateUnitPreview()"
+                                class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-bold text-slate-800"
+                            >
+                        </div>
+                        <div>
+                            <label for="unitType" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
+                                Unit
+                            </label>
+                            <select 
+                                id="unitType" 
+                                onchange="calculateUnitPreview()"
+                                class="w-full px-2.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-medium"
+                            >
+                                <option value="Papan">Papan (30 biji)</option>
+                                <option value="Sarang">Sarang</option>
+                                <option value="Biji">Biji</option>
+                                <option value="Kotak">Kotak</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Harga (RM) -->
+                    <div>
+                        <div class="flex items-center justify-between mb-1">
+                            <label for="price" class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
+                                Jumlah Harga (RM)
+                            </label>
+                            <span id="unitPriceHint" class="text-[10px] text-amber-600 font-semibold"></span>
+                        </div>
+                        <div class="relative">
+                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold text-xs">RM</span>
+                            <input 
+                                type="number" 
+                                id="price" 
+                                min="0.01" 
+                                step="0.01" 
+                                placeholder="0.00" 
+                                required 
+                                oninput="calculateUnitPreview()"
+                                class="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-black text-slate-900"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Status Tuntutan (Pilihan iOS Segmented Control) -->
+                    <div>
+                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                            Status Tuntutan
+                        </label>
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="relative flex items-center justify-center p-2.5 rounded-xl border cursor-pointer select-none bg-emerald-50/50 border-emerald-200">
+                                <input type="radio" name="claimStatus" value="Telah Claim" class="sr-only peer" checked>
+                                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 peer-checked:border-emerald-600 peer-checked:bg-emerald-600 mr-2 flex items-center justify-center">
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-800">Telah Claim</span>
+                            </label>
+
+                            <label class="relative flex items-center justify-center p-2.5 rounded-xl border cursor-pointer select-none bg-amber-50/50 border-amber-200">
+                                <input type="radio" name="claimStatus" value="Belum Claim" class="sr-only peer">
+                                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 peer-checked:border-amber-600 peer-checked:bg-amber-600 mr-2 flex items-center justify-center">
+                                    <div class="w-1 h-1 bg-white rounded-full"></div>
+                                </div>
+                                <span class="text-xs font-bold text-amber-800">Belum Claim</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Catatan / Resit -->
+                    <div>
+                        <input 
+                            type="text" 
+                            id="purchaseNote" 
+                            placeholder="Catatan / No. Resit (Pilihan)" 
+                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none text-slate-700"
+                        >
+                    </div>
+
+                    <button 
+                        type="submit" 
+                        id="submitRecordBtn"
+                        class="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-200 transition flex items-center justify-center gap-1.5 active:scale-95"
+                    >
+                        <i data-lucide="check" class="w-4 h-4"></i>
+                        <span id="submitBtnText">Simpan Rekod Pembelian</span>
+                    </button>
+                </form>
+            </section>
+
+            <!-- Visualisasi Carta Pie -->
+            <section class="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs">
+                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                        <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-amber-500"></i>
+                        Nisbah Tuntutan
+                    </span>
+                    <span id="chartTotalAmount" class="text-[11px] font-bold text-slate-600">Total: RM 0.00</span>
+                </div>
+                
+                <div class="flex items-center justify-around mt-3">
+                    <div class="relative w-28 h-28">
+                        <canvas id="claimsPieChart"></canvas>
+                    </div>
+                    <div class="space-y-2 text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <div>
+                                <p class="text-[10px] text-slate-400">Telah Claim</p>
+                                <p class="font-bold text-emerald-700 text-xs" id="legendPaidAmount">RM 0.00</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                            <div>
+                                <p class="text-[10px] text-slate-400">Belum Claim</p>
+                                <p class="font-bold text-amber-700 text-xs" id="legendUnpaidAmount">RM 0.00</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Laporan Senarai Transaksi (Mobile Cards) -->
+            <section id="sectionList" class="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <i data-lucide="list" class="w-3.5 h-3.5 text-amber-500"></i>
+                        Senarai Pembelian
+                    </h3>
+                    <span id="totalRowCount" class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">0 rekod</span>
+                </div>
+
+                <!-- Penapis Pantas -->
+                <div class="flex gap-1.5 p-1 bg-slate-100 rounded-xl text-[11px] font-semibold">
+                    <button onclick="setStatusFilter('ALL')" id="filterBtnAll" class="flex-1 py-1 rounded-lg bg-white text-slate-800 shadow-xs">Semua</button>
+                    <button onclick="setStatusFilter('Telah Claim')" id="filterBtnPaid" class="flex-1 py-1 rounded-lg text-slate-500">Claim</button>
+                    <button onclick="setStatusFilter('Belum Claim')" id="filterBtnUnpaid" class="flex-1 py-1 rounded-lg text-slate-500">Belum</button>
+                </div>
+
+                <!-- Carian Pantas -->
+                <div class="relative">
+                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
+                    <input 
+                        type="text" 
+                        id="tableSearchInput" 
+                        placeholder="Cari resit / tarikh..." 
+                        oninput="filterRecords()"
+                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-amber-400 outline-none"
+                    >
+                </div>
+
+                <!-- Senarai Kad Transaksi iPhone -->
+                <div id="purchaseMobileList" class="space-y-2.5 pt-1">
+                    <!-- Kad dijana secara automatik oleh JS -->
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigasi Bawah Gaya iOS (Bottom Bar) -->
+        <nav class="bg-white/95 backdrop-blur-md border-t border-slate-200/80 fixed sm:absolute bottom-0 inset-x-0 z-30 px-6 py-2 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400">
+            <button onclick="scrollToTop()" class="flex flex-col items-center gap-0.5 text-amber-600">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Ringkasan</span>
+            </button>
+            <button onclick="scrollToSection('sectionForm')" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
+                <i data-lucide="plus-circle" class="w-5 h-5"></i>
+                <span>Tambah</span>
+            </button>
+            <button onclick="scrollToSection('sectionList')" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+                <span>Laporan</span>
+            </button>
+            <button onclick="openGoogleSheetModal()" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
+                <i data-lucide="sheet" class="w-5 h-5"></i>
+                <span>Sheet</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modal Konfigurasi Google Sheet & Webhook -->
+    <div id="googleSheetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
+        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 max-h-[85vh] overflow-y-auto safe-bottom">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
+                        <i data-lucide="sheet" class="w-4 h-4"></i>
+                    </div>
+                    <h3 class="text-xs font-bold text-slate-800">Pautan Google Sheet</h3>
+                </div>
+                <button onclick="closeGoogleSheetModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="mt-3 space-y-3 text-xs">
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 text-[11px]">Apps Script Web App URL:</label>
+                    <input 
+                        type="url" 
+                        id="gsheetWebhookInput" 
+                        placeholder="https://script.google.com/macros/s/.../exec"
+                        class="w-full px-3 py-2 rounded-xl border border-emerald-300 text-[11px] text-slate-800 focus:ring-1 focus:ring-emerald-500 outline-none bg-emerald-50/30 font-mono"
+                    >
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-700 mb-1 text-[11px]">Pautan Google Sheet:</label>
+                    <input 
+                        type="url" 
+                        id="gsheetUrlInput" 
+                        placeholder="https://docs.google.com/spreadsheets/d/..."
+                        class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[11px] text-slate-800 focus:ring-1 focus:ring-amber-400 outline-none"
+                    >
+                </div>
+
+                <div class="flex items-center justify-between pt-2">
+                    <button onclick="testWebhookConnection()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold text-[11px] flex items-center gap-1">
+                        <i data-lucide="activity" class="w-3 h-3 text-emerald-600"></i>
+                        <span>Uji Webhook</span>
+                    </button>
+                    <button onclick="openTargetSheet()" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-[11px] flex items-center gap-1">
+                        <i data-lucide="external-link" class="w-3 h-3"></i>
+                        <span>Buka Sheet</span>
+                    </button>
+                    <button onclick="saveSheetSettings()" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white font-semibold text-[11px]">
+                        Simpan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Pengesahan Padam -->
+    <div id="deleteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white rounded-3xl max-w-xs w-full p-5 text-center shadow-2xl">
+            <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-2.5">
+                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
+            </div>
+            <h4 class="text-sm font-bold text-slate-800" id="deleteModalTitle">Padam Rekod Ini?</h4>
+            <p class="text-[11px] text-slate-500 mt-0.5" id="deleteModalDesc">Tindakan ini tidak boleh diundur.</p>
+            <div class="mt-4 flex items-center justify-center gap-2">
+                <button onclick="closeDeleteModal()" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700">Batal</button>
+                <button id="confirmDeleteBtn" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-rose-600 text-white">Padam</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Container Toast Notifikasi iOS Banner -->
+    <div id="toastContainer" class="fixed top-4 inset-x-0 mx-auto z-50 flex flex-col items-center gap-1.5 max-w-[340px] pointer-events-none"></div>
+
+    <!-- Skrip Pengendalian -->
+    <script>
+        const TOTAL_BUDGET = 1650.00;
+        let purchaseRecords = [];
+        let currentFilter = 'ALL';
+        let claimsChart = null;
+        let pendingDeleteId = null;
+
+        window.onload = function() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('purchaseDate').value = today;
+
+            loadSavedSettings();
+            loadRecords();
+            initChart();
+            renderDashboard();
+            lucide.createIcons();
+        };
+
+        function scrollToTop() {
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // ... existing code ...
+        // (Semua fungsi asal: loadRecords, saveRecords, loadSavedSettings, saveSheetSettings,
+        // handleFormSubmit, startEditRecord, cancelEditing, calculateUnitPreview, toggleClaimStatus,
+        // promptDeleteRecord, closeDeleteModal, deleteRecord, fetchFromGoogleSheet, syncWithGoogleAppsScript,
+        // sendSingleToSheet, syncAllToGoogleSheet, testWebhookConnection, openTargetSheet, exportToCSV kekal)
+
+        // Penyesuaian Paparan Kad Transaksi Khas untuk iPhone 17 Pro
+        function renderTable() {
+            const container = document.getElementById('purchaseMobileList');
+            const searchKeyword = document.getElementById('tableSearchInput').value.toLowerCase().trim();
+
+            let filtered = purchaseRecords.filter(item => {
+                const matchFilter = (currentFilter === 'ALL') || (item.status === currentFilter);
+                const matchSearch = (!searchKeyword) || 
+                    (item.nota && item.nota.toLowerCase().includes(searchKeyword)) || 
+                    (item.tarikh && item.tarikh.includes(searchKeyword)) ||
+                    (item.id && item.id.toLowerCase().includes(searchKeyword));
+                return matchFilter && matchSearch;
+            });
+
+            document.getElementById('totalRowCount').textContent = `${filtered.length} rekod`;
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 flex flex-col items-center justify-center gap-1.5">
+                        <i data-lucide="inbox" class="w-6 h-6 text-slate-300"></i>
+                        <span class="text-xs font-semibold">Tiada rekod pembelian</span>
+                    </div>
+                `;
+                lucide.createIcons();
+                return;
+            }
+
+            let html = '';
+            filtered.forEach((item) => {
+                const isPaid = item.status === 'Telah Claim';
+                const statusBadge = isPaid 
+                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Telah Claim</span>`
+                    : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Belum Claim</span>`;
+
+                html += `
+                    <div class="p-3 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white transition flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-slate-800">${formatDateDisplay(item.tarikh)}</span>
+                            <span class="text-xs font-black text-slate-900">RM ${(Number(item.harga) || 0).toFixed(2)}</span>
+                        </div>
+                        <div class="flex items-center justify-between text-[11px] text-slate-500">
+                            <span>${item.kuantiti} ${item.unit || 'Papan'}</span>
+                            <div>${statusBadge}</div>
+                        </div>
+                        ${item.nota && item.nota !== '-' ? `<p class="text-[10px] text-slate-400 italic truncate">${escapeHTML(item.nota)}</p>` : ''}
+                        
+                        <!-- Aksi Cepat Kad -->
+                        <div class="flex items-center justify-end gap-1 pt-1 border-t border-slate-100 mt-0.5">
+                            <button onclick="startEditRecord('${item.id}')" title="Edit" class="p-1 text-slate-400 hover:text-indigo-600">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="sendSingleToSheet('${item.id}')" title="Sync ke Sheet" class="p-1 text-slate-400 hover:text-emerald-600">
+                                <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="toggleClaimStatus('${item.id}')" title="Tukar Status" class="p-1 text-slate-400 hover:text-amber-600">
+                                <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <button onclick="promptDeleteRecord('${item.id}')" title="Padam" class="p-1 text-slate-400 hover:text-rose-600">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+            lucide.createIcons();
+        }
+
+        // ... existing code ...
+        // (Fungsi renderDashboard, updateChart, initChart, setStatusFilter, dsb. kekal sama)
