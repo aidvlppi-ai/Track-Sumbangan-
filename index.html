@@ -1,1099 +1,1337 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sistem Rekod Pembelian Telur</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons CDN -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        /* iPhone 17 Pro Frame & Safe Area Layout */
-        .iphone-frame {
-            max-width: 402px;
-            min-height: 874px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.45);
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Penjejakan Pembelian Telur</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts Inter & Poppins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            maroon: {
+              50: '#fff1f2',
+              100: '#ffe4e6',
+              200: '#fecdd3',
+              500: '#be123c',
+              600: '#9f1239',
+              700: '#881337',
+              800: '#70102b',
+              900: '#4c0519',
+              950: '#2b020d',
+            },
+            amberAccent: '#f59e0b',
+          },
+          fontFamily: {
+            sans: ['Poppins', 'sans-serif'],
+          }
         }
-        @media (min-width: 640px) {
-            .iphone-frame {
-                border-radius: 54px;
-                border: 10px solid #1e293b;
-            }
-            .dynamic-island-pill {
-                display: flex !important;
-            }
-        }
-        .safe-top {
-            padding-top: max(12px, env(safe-area-inset-top));
-        }
-        .safe-bottom {
-            padding-bottom: max(14px, env(safe-area-inset-bottom));
-        }
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-    </style>
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background-color: #faf5f5;
+    }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #ffe4e6;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #9f1239;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #70102b;
+    }
+  </style>
 </head>
-<body class="bg-slate-900 sm:py-6 text-slate-800 antialiased flex flex-col items-center justify-start min-h-screen">
+<body class="text-slate-800 min-h-screen flex flex-col justify-between">
 
-    <!-- Container Utama: Bersaiz Tepat iPhone 17 Pro (402px lebar logikal) -->
-    <div id="iphoneContainer" class="iphone-frame bg-slate-50 w-full flex flex-col min-h-screen sm:min-h-[874px] relative overflow-hidden transition-all duration-300">
-        
-        <!-- Bar Status Atas & Dynamic Island Simulasi (Desktop View) -->
-        <div class="hidden dynamic-island-pill w-full pt-3 pb-2 px-7 bg-white justify-between items-center text-xs font-semibold text-slate-800 select-none z-40 border-b border-slate-100">
-            <span class="text-[13px] font-bold tracking-tight">9:41</span>
-            <!-- Dynamic Island Shape -->
-            <div class="h-6 w-28 bg-black rounded-full flex items-center justify-end px-2 gap-1.5 shadow-inner">
-                <div class="w-2.5 h-2.5 rounded-full bg-slate-800 border border-slate-700"></div>
-                <div class="w-2 h-2 rounded-full bg-emerald-500/80 animate-pulse"></div>
-            </div>
-            <div class="flex items-center gap-1.5 text-slate-700">
-                <i data-lucide="signal" class="w-3.5 h-3.5"></i>
-                <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
-                <i data-lucide="battery-charging" class="w-4 h-4 text-emerald-600"></i>
-            </div>
+  <!-- Header / Navbar -->
+  <header class="bg-gradient-to-r from-maroon-900 via-maroon-800 to-maroon-700 text-white shadow-xl sticky top-0 z-40 border-b-4 border-amber-400">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-wrap justify-between items-center gap-4">
+      <div class="flex items-center space-x-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-inner">
+          <span class="text-3xl">🥚</span>
         </div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+            Track Telur Hub 
+            <span class="text-xs bg-amber-400 text-maroon-950 px-2 py-0.5 rounded-full font-bold shadow-sm">Bajet RM1650</span>
+          </h1>
+          <p class="text-xs text-rose-200">Rekod Pembelian, Pantau Tuntutan & Segerak ke Google Sheets</p>
+        </div>
+      </div>
 
-        <!-- Header Ringkas iOS Style -->
-        <header class="bg-white/90 backdrop-blur-md border-b border-slate-200/80 sticky top-0 z-30 px-4 py-3 safe-top">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 to-amber-400 text-white flex items-center justify-center shadow-md shadow-amber-200 shrink-0">
-                        <i data-lucide="egg" class="w-5 h-5"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-sm font-extrabold text-slate-900 tracking-tight leading-none">
-                            Rekod Telur
-                        </h1>
-                        <span class="text-[10px] font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded-md">Bajet RM 1,650</span>
-                    </div>
-                </div>
+      <div class="flex items-center gap-3">
+        <button id="refreshSyncBtn" onclick="sendAllUnsynced()" class="flex items-center gap-2 text-xs sm:text-sm bg-maroon-950 hover:bg-black/40 text-amber-300 px-3.5 py-2 rounded-xl transition-all border border-amber-400/40 shadow-sm active:scale-95">
+          <i class="fa-solid fa-cloud-arrow-up"></i>
+          <span class="font-medium">Hantar Semua ke Google Sheet</span>
+        </button>
+      </div>
+    </div>
+  </header>
 
-                <!-- Butang Sheet & Aksi Pantas -->
-                <div class="flex items-center gap-1">
-                    <button onclick="openGoogleSheetModal()" class="p-2 rounded-xl text-emerald-700 hover:bg-emerald-50 transition" title="Pautkan Google Sheet">
-                        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="fetchFromGoogleSheet()" id="fetchSheetBtn" class="p-2 rounded-xl text-sky-700 hover:bg-sky-50 transition" title="Tarik dari Sheet">
-                        <i data-lucide="cloud-download" class="w-4 h-4"></i>
-                    </button>
-                    <button onclick="syncAllToGoogleSheet()" id="syncAllBtn" class="p-2 rounded-xl text-amber-600 hover:bg-amber-50 transition" title="Sync ke Sheet">
-                        <i data-lucide="cloud-upload" class="w-4 h-4"></i>
-                    </button>
-                </div>
+  <!-- Main Content Container -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 w-full space-y-6 flex-grow">
+
+    <!-- Top Banner: Santai & Menarik -->
+    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-maroon-900 to-maroon-700 text-white p-6 sm:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6 border border-maroon-600">
+      <div class="space-y-2 max-w-xl text-center md:text-left z-10">
+        <div class="inline-flex items-center gap-2 bg-white/15 px-3 py-1 rounded-full text-xs font-semibold text-rose-200 backdrop-blur-sm">
+          <span>✨ Pengurusan Bajet Telur Mesra & Teratur</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight">Hai Pengurus Telur! 🧺</h2>
+        <p class="text-rose-100 text-sm leading-relaxed">
+          Jangan risau tentang resit hilang lagi! Catat setiap papan telur yang dibeli, ketahui jumlah telah di-claim atau belum, dan simpan terus ke Google Sheet secara automatik.
+        </p>
+      </div>
+
+      <!-- Cute Egg Basket Decorative Illustration -->
+      <div class="flex items-center justify-center relative z-10 shrink-0">
+        <div class="relative w-36 h-36 sm:w-44 sm:h-44 bg-gradient-to-tr from-amber-400/20 to-rose-400/20 rounded-full flex items-center justify-center border-2 border-white/20 shadow-2xl backdrop-blur-md">
+          <svg viewBox="0 0 200 200" class="w-28 h-28 sm:w-36 sm:h-36 drop-shadow-lg" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Basket Base -->
+            <path d="M40 100 L55 170 Q100 185 145 170 L160 100 Z" fill="#b45309" stroke="#78350f" stroke-width="4"/>
+            <!-- Basket weave pattern -->
+            <path d="M50 120 Q100 135 150 120 M53 145 Q100 160 147 145" stroke="#fcd34d" stroke-width="3" stroke-linecap="round"/>
+            <path d="M75 105 L80 174 M100 106 L100 178 M125 105 L120 174" stroke="#d97706" stroke-width="3" stroke-linecap="round"/>
+            <!-- Basket handle -->
+            <path d="M45 100 C 45 30, 155 30, 155 100" stroke="#92400e" stroke-width="6" fill="none" stroke-linecap="round"/>
+            <!-- Eggs in basket -->
+            <!-- Egg 1 (Left) -->
+            <ellipse cx="75" cy="95" rx="18" ry="24" transform="rotate(-15 75 95)" fill="#fffbeb" stroke="#fde68a" stroke-width="2"/>
+            <!-- Egg 2 (Right) -->
+            <ellipse cx="125" cy="95" rx="18" ry="24" transform="rotate(15 125 95)" fill="#fef3c7" stroke="#fcd34d" stroke-width="2"/>
+            <!-- Egg 3 (Center foreground) -->
+            <ellipse cx="100" cy="90" rx="20" ry="26" fill="#ffffff" stroke="#fef08a" stroke-width="2.5"/>
+            <!-- Egg 3 shine -->
+            <ellipse cx="94" cy="80" rx="4" ry="7" fill="white" opacity="0.8"/>
+            <circle cx="100" cy="95" r="3" fill="#f59e0b" opacity="0.3"/>
+            <!-- Cute face on center egg -->
+            <circle cx="93" cy="88" r="2.5" fill="#374151"/>
+            <circle cx="107" cy="88" r="2.5" fill="#374151"/>
+            <path d="M96 95 Q100 99 104 95" stroke="#374151" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+            <ellipse cx="88" cy="92" rx="2" ry="1.2" fill="#f43f5e" opacity="0.6"/>
+            <ellipse cx="112" cy="92" rx="2" ry="1.2" fill="#f43f5e" opacity="0.6"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Background decorative circle shapes -->
+      <div class="absolute -top-12 -right-12 w-48 h-48 bg-white/5 rounded-full pointer-events-none"></div>
+      <div class="absolute -bottom-10 -left-10 w-40 h-40 bg-amber-400/10 rounded-full pointer-events-none"></div>
+    </div>
+
+    <!-- Summary KPI Cards -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <!-- Total Budget Allocated -->
+      <div class="bg-white p-5 rounded-2xl border-l-4 border-maroon-700 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Bajet Diberi</p>
+          <div class="w-9 h-9 rounded-xl bg-maroon-50 text-maroon-800 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-wallet"></i>
+          </div>
+        </div>
+        <p class="text-2xl font-bold text-maroon-900 mt-2">RM 1,650.00</p>
+        <div class="flex items-center text-xs text-slate-400 mt-1">
+          <span>Bajet Asal Diterima</span>
+        </div>
+      </div>
+
+      <!-- Total Spent -->
+      <div class="bg-white p-5 rounded-2xl border-l-4 border-rose-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Jumlah Dibelanjakan</p>
+          <div class="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+        </div>
+        <p id="kpiTotalSpent" class="text-2xl font-bold text-slate-800 mt-2">RM 0.00</p>
+        <div class="flex items-center text-xs text-slate-500 mt-1 justify-between">
+          <span id="kpiSpentPercent">0% dari bajet</span>
+          <span id="kpiTotalTrays">0 Papan</span>
+        </div>
+      </div>
+
+      <!-- Claimed Amount -->
+      <div class="bg-white p-5 rounded-2xl border-l-4 border-emerald-600 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Telah Claim</p>
+          <div class="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <p id="kpiClaimed" class="text-2xl font-bold text-emerald-700 mt-2">RM 0.00</p>
+        <div class="flex items-center text-xs text-emerald-600 mt-1 justify-between font-medium">
+          <span id="kpiClaimedTrays">0 papan di-claim</span>
+          <span id="kpiClaimedCount">0 rekod</span>
+        </div>
+      </div>
+
+      <!-- Unclaimed Amount -->
+      <div class="bg-white p-5 rounded-2xl border-l-4 border-amber-500 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-center justify-between">
+          <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Belum Claim</p>
+          <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+        </div>
+        <p id="kpiUnclaimed" class="text-2xl font-bold text-amber-700 mt-2">RM 0.00</p>
+        <div class="flex items-center text-xs text-amber-600 mt-1 justify-between font-medium">
+          <span id="kpiUnclaimedTrays">0 papan belum claim</span>
+          <span id="kpiUnclaimedCount">0 rekod</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Middle Section: Input Form & Visualizations -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+      <!-- Form Column (5 cols) -->
+      <div class="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-maroon-100 flex flex-col justify-between">
+        <div>
+          <div class="flex items-center justify-between border-b border-rose-100 pb-4 mb-5">
+            <div class="flex items-center gap-3">
+              <div id="formHeaderIcon" class="w-10 h-10 rounded-xl bg-maroon-700 text-white flex items-center justify-center shadow-md shadow-maroon-900/20">
+                <i class="fa-solid fa-cart-plus text-base"></i>
+              </div>
+              <div>
+                <h3 id="formTitle" class="font-bold text-lg text-maroon-950">Borang Beli Telur</h3>
+                <p id="formSubtitle" class="text-xs text-slate-500">Isi maklumat belian papan telur di bawah</p>
+              </div>
             </div>
-        </header>
+            <!-- Indicator & Cancel Button when Editing -->
+            <button 
+              type="button" 
+              id="cancelEditBtn" 
+              onclick="cancelEditMode()" 
+              class="hidden text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-2.5 py-1.5 rounded-lg font-medium transition items-center gap-1"
+            >
+              <i class="fa-solid fa-xmark"></i> Batal Edit
+            </button>
+          </div>
 
-        <!-- Kandungan Utama (Skrol Menegak Lancar) -->
-        <main class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-28">
+          <form id="purchaseForm" onsubmit="handleFormSubmit(event)" class="space-y-4">
+            <!-- Hidden input to track editing ID -->
+            <input type="hidden" id="editingRecordId" value="">
             
-            <!-- Status Amaran Had Bajet -->
-            <div id="budgetAlertBanner" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-3 flex items-center justify-between gap-2.5">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0"></i>
-                    <p class="text-[11px] font-bold text-rose-800 leading-tight" id="budgetAlertText">Baki bajet kritikal!</p>
-                </div>
-                <button onclick="document.getElementById('budgetAlertBanner').classList.add('hidden')" class="text-rose-400 p-1">
-                    <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                </button>
+            <!-- Tarikh Pembelian (Kalendar) -->
+            <div>
+              <label for="purchaseDate" class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fa-regular fa-calendar-days text-maroon-700"></i>
+                Tarikh Pembelian <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative">
+                <input 
+                  type="date" 
+                  id="purchaseDate" 
+                  required 
+                  class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-maroon-600 focus:ring-2 focus:ring-maroon-100 text-sm outline-none transition bg-slate-50/50 hover:bg-white"
+                >
+              </div>
             </div>
 
-            <!-- Kad Baki Bajet Utama -->
-            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-4 text-white shadow-lg relative overflow-hidden">
-                <div class="flex items-center justify-between text-slate-300 text-xs font-medium">
-                    <span>Baki Bajet Bersih</span>
-                    <span class="text-[10px] bg-slate-700/80 px-2 py-0.5 rounded-full text-slate-300">Asal: RM 1,650</span>
-                </div>
-                <div class="mt-1 flex items-baseline justify-between">
-                    <h2 id="metricBalance" class="text-2xl font-black text-white tracking-tight">RM 1,650.00</h2>
-                    <span id="budgetUsagePercent" class="text-xs font-bold text-amber-400">0% diguna</span>
-                </div>
-
-                <!-- Progress Bar Penggunaan -->
-                <div class="w-full h-2 bg-slate-700/70 rounded-full mt-3 overflow-hidden flex">
-                    <div id="progressPaid" class="bg-emerald-400 h-full transition-all duration-500" style="width: 0%"></div>
-                    <div id="progressUnpaid" class="bg-amber-400 h-full transition-all duration-500" style="width: 0%"></div>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 mt-3 pt-2.5 border-t border-slate-700/60 text-[11px]">
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                        <span class="text-slate-300">Telah Claim:</span>
-                        <strong id="progressPaidLabel" class="text-emerald-300 ml-auto font-bold">RM 0.00</strong>
-                    </div>
-                    <div class="flex items-center gap-1.5">
-                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-                        <span class="text-slate-300">Belum Claim:</span>
-                        <strong id="progressUnpaidLabel" class="text-amber-300 ml-auto font-bold">RM 0.00</strong>
-                    </div>
-                </div>
+            <!-- Kuantiti (Papan Sahaja) -->
+            <div>
+              <label for="quantity" class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-boxes-stacked text-maroon-700"></i>
+                Kuantiti (Papan Sahaja) <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative flex rounded-xl shadow-sm">
+                <input 
+                  type="number" 
+                  id="quantity" 
+                  min="1" 
+                  step="1" 
+                  placeholder="Contoh: 10" 
+                  required 
+                  class="w-full px-3.5 py-2.5 rounded-l-xl border border-r-0 border-slate-300 focus:border-maroon-600 focus:ring-2 focus:ring-maroon-100 text-sm outline-none transition bg-slate-50/50 hover:bg-white font-medium"
+                >
+                <span class="inline-flex items-center px-4 rounded-r-xl border border-l-0 border-slate-300 bg-rose-50 text-maroon-800 text-xs font-semibold">
+                  Papan
+                </span>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-1">1 papan biasanya bersamaan 30 biji telur.</p>
             </div>
 
-            <!-- Kad Metrik Pantas -->
-            <div class="grid grid-cols-2 gap-3">
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-xs">
-                    <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase">
-                        <span>Jumlah Telur</span>
-                        <i data-lucide="layers" class="w-3.5 h-3.5 text-indigo-500"></i>
-                    </div>
-                    <p id="metricTotalQuantity" class="text-lg font-black text-slate-800 mt-1">0</p>
-                    <p id="metricAvgPrice" class="text-[10px] text-slate-400 mt-0.5 truncate">Purata: RM 0.00</p>
-                </div>
-
-                <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-xs">
-                    <div class="flex items-center justify-between text-[11px] font-bold text-amber-600 uppercase">
-                        <span>Belum Claim</span>
-                        <i data-lucide="clock" class="w-3.5 h-3.5 text-amber-500"></i>
-                    </div>
-                    <p id="metricUnpaid" class="text-lg font-black text-amber-600 mt-1">RM 0.00</p>
-                    <p id="metricUnpaidCount" class="text-[10px] text-slate-400 mt-0.5">0 transaksi</p>
-                </div>
+            <!-- Harga (RM) -->
+            <div>
+              <label for="price" class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fa-solid fa-tag text-maroon-700"></i>
+                Harga Pembelian (RM) <span class="text-rose-600">*</span>
+              </label>
+              <div class="relative flex rounded-xl shadow-sm">
+                <span class="inline-flex items-center px-3.5 rounded-l-xl border border-r-0 border-slate-300 bg-rose-50 text-maroon-900 text-sm font-bold">
+                  RM
+                </span>
+                <input 
+                  type="number" 
+                  id="price" 
+                  min="0.01" 
+                  step="0.01" 
+                  placeholder="0.00" 
+                  required 
+                  class="w-full px-3.5 py-2.5 rounded-r-xl border border-l-0 border-slate-300 focus:border-maroon-600 focus:ring-2 focus:ring-maroon-100 text-sm outline-none transition bg-slate-50/50 hover:bg-white font-semibold text-slate-800"
+                >
+              </div>
             </div>
 
-            <!-- Tab Borang Key-In -->
-            <section id="sectionForm" class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3.5">
-                
-                <!-- Notis Mod Suntingan -->
-                <div id="editingBanner" class="hidden p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-800">
-                    <span class="font-semibold flex items-center gap-1.5 truncate">
-                        <i data-lucide="pencil" class="w-3.5 h-3.5 text-indigo-600"></i>
-                        Edit: <span id="editingRecordId" class="font-mono"></span>
-                    </span>
-                    <button onclick="cancelEditing()" class="text-indigo-600 underline font-bold text-[11px]">Batal</button>
-                </div>
+            <!-- Status: Dua Pilihan (Telah Claim & Belum Claim) -->
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1.5">
+                <i class="fa-solid fa-list-check text-maroon-700"></i>
+                Status Tuntutan <span class="text-rose-600">*</span>
+              </label>
+              <div class="grid grid-cols-2 gap-3">
+                <!-- Telah Claim Radio Option -->
+                <label class="relative flex flex-col items-center p-3 rounded-2xl border-2 border-slate-200 cursor-pointer transition-all hover:bg-emerald-50/40 has-[:checked]:border-emerald-600 has-[:checked]:bg-emerald-50/70 has-[:checked]:shadow-sm">
+                  <input type="radio" name="claimStatus" value="Telah Claim" class="sr-only" required>
+                  <div class="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mb-1 text-sm font-bold">
+                    <i class="fa-solid fa-check"></i>
+                  </div>
+                  <span class="text-xs font-bold text-slate-800">Telah Claim</span>
+                  <span class="text-[10px] text-emerald-700 font-medium">Sudah Dibayar</span>
+                </label>
 
-                <div class="flex items-center justify-between border-b border-slate-100 pb-2">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5" id="formTitleText">
-                        <i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i>
-                        Key-In Pembelian Telur
-                    </h3>
-                    <span class="text-[10px] text-slate-400">Sentuh untuk isi</span>
-                </div>
+                <!-- Belum Claim Radio Option -->
+                <label class="relative flex flex-col items-center p-3 rounded-2xl border-2 border-slate-200 cursor-pointer transition-all hover:bg-amber-50/40 has-[:checked]:border-amber-500 has-[:checked]:bg-amber-50/70 has-[:checked]:shadow-sm">
+                  <input type="radio" name="claimStatus" value="Belum Claim" class="sr-only" checked>
+                  <div class="w-7 h-7 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center mb-1 text-sm font-bold">
+                    <i class="fa-solid fa-clock"></i>
+                  </div>
+                  <span class="text-xs font-bold text-slate-800">Belum Claim</span>
+                  <span class="text-[10px] text-amber-700 font-medium">Pending Tuntutan</span>
+                </label>
+              </div>
+            </div>
 
-                <form id="eggPurchaseForm" onsubmit="handleFormSubmit(event)" class="space-y-3">
-                    <input type="hidden" id="editHiddenId" value="">
+            <!-- Catatan Tambahan (Pilihan) -->
+            <div>
+              <label for="notes" class="block text-xs font-semibold text-slate-700 mb-1 flex items-center gap-1.5">
+                <i class="fa-regular fa-comment-dots text-maroon-700"></i>
+                Catatan / Kedai (Pilihan)
+              </label>
+              <input 
+                type="text" 
+                id="notes" 
+                placeholder="Contoh: Kedai Pak Abu / Gred A" 
+                class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 focus:border-maroon-600 focus:ring-2 focus:ring-maroon-100 text-sm outline-none transition bg-slate-50/50 hover:bg-white"
+              >
+            </div>
 
-                    <!-- Tarikh -->
-                    <div>
-                        <label for="purchaseDate" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                            Tarikh Pembelian
-                        </label>
-                        <input 
-                            type="date" 
-                            id="purchaseDate" 
-                            required 
-                            class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-medium cursor-pointer"
-                        >
-                    </div>
-
-                    <!-- Kuantiti & Unit -->
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label for="quantity" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                                Kuantiti
-                            </label>
-                            <input 
-                                type="number" 
-                                id="quantity" 
-                                min="1" 
-                                step="1" 
-                                placeholder="Cth: 10" 
-                                required 
-                                oninput="calculateUnitPreview()"
-                                class="w-full px-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-bold text-slate-800"
-                            >
-                        </div>
-                        <div>
-                            <label for="unitType" class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                                Unit
-                            </label>
-                            <select 
-                                id="unitType" 
-                                onchange="calculateUnitPreview()"
-                                class="w-full px-2.5 py-2.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-medium"
-                            >
-                                <option value="Papan">Papan (30 biji)</option>
-                                <option value="Sarang">Sarang</option>
-                                <option value="Biji">Biji</option>
-                                <option value="Kotak">Kotak</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Harga (RM) -->
-                    <div>
-                        <div class="flex items-center justify-between mb-1">
-                            <label for="price" class="text-[11px] font-bold uppercase tracking-wider text-slate-500">
-                                Jumlah Harga (RM)
-                            </label>
-                            <span id="unitPriceHint" class="text-[10px] text-amber-600 font-semibold"></span>
-                        </div>
-                        <div class="relative">
-                            <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400 font-bold text-xs">RM</span>
-                            <input 
-                                type="number" 
-                                id="price" 
-                                min="0.01" 
-                                step="0.01" 
-                                placeholder="0.00" 
-                                required 
-                                oninput="calculateUnitPreview()"
-                                class="w-full pl-10 pr-3 py-2.5 text-sm rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none font-black text-slate-900"
-                            >
-                        </div>
-                    </div>
-
-                    <!-- Status Tuntutan -->
-                    <div>
-                        <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
-                            Status Tuntutan
-                        </label>
-                        <div class="grid grid-cols-2 gap-2">
-                            <label class="relative flex items-center justify-center p-2.5 rounded-xl border cursor-pointer select-none bg-emerald-50/50 border-emerald-200">
-                                <input type="radio" name="claimStatus" value="Telah Claim" class="sr-only peer" checked>
-                                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 peer-checked:border-emerald-600 peer-checked:bg-emerald-600 mr-2 flex items-center justify-center">
-                                    <div class="w-1 h-1 bg-white rounded-full"></div>
-                                </div>
-                                <span class="text-xs font-bold text-emerald-800">Telah Claim</span>
-                            </label>
-
-                            <label class="relative flex items-center justify-center p-2.5 rounded-xl border cursor-pointer select-none bg-amber-50/50 border-amber-200">
-                                <input type="radio" name="claimStatus" value="Belum Claim" class="sr-only peer">
-                                <div class="w-3.5 h-3.5 rounded-full border-2 border-slate-300 peer-checked:border-amber-600 peer-checked:bg-amber-600 mr-2 flex items-center justify-center">
-                                    <div class="w-1 h-1 bg-white rounded-full"></div>
-                                </div>
-                                <span class="text-xs font-bold text-amber-800">Belum Claim</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Catatan / Resit -->
-                    <div>
-                        <input 
-                            type="text" 
-                            id="purchaseNote" 
-                            placeholder="Catatan / No. Resit (Pilihan)" 
-                            class="w-full px-3 py-2 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-2 focus:ring-amber-400 outline-none text-slate-700"
-                        >
-                    </div>
-
-                    <button 
-                        type="submit" 
-                        id="submitRecordBtn"
-                        class="w-full py-3 px-4 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs shadow-md shadow-amber-200 transition flex items-center justify-center gap-1.5 active:scale-95"
-                    >
-                        <i data-lucide="check" class="w-4 h-4"></i>
-                        <span id="submitBtnText">Simpan Rekod Pembelian</span>
-                    </button>
-                </form>
-            </section>
-
-            <!-- Visualisasi Carta Pie -->
-            <section class="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs">
-                <div class="flex items-center justify-between pb-2 border-b border-slate-100">
-                    <span class="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                        <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-amber-500"></i>
-                        Nisbah Tuntutan
-                    </span>
-                    <span id="chartTotalAmount" class="text-[11px] font-bold text-slate-600">Total: RM 0.00</span>
-                </div>
-                
-                <div class="flex items-center justify-around mt-3">
-                    <div class="relative w-28 h-28">
-                        <canvas id="claimsPieChart"></canvas>
-                    </div>
-                    <div class="space-y-2 text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            <div>
-                                <p class="text-[10px] text-slate-400">Telah Claim</p>
-                                <p class="font-bold text-emerald-700 text-xs" id="legendPaidAmount">RM 0.00</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
-                            <div>
-                                <p class="text-[10px] text-slate-400">Belum Claim</p>
-                                <p class="font-bold text-amber-700 text-xs" id="legendUnpaidAmount">RM 0.00</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Laporan Senarai Transaksi -->
-            <section id="sectionList" class="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                        <i data-lucide="list" class="w-3.5 h-3.5 text-amber-500"></i>
-                        Senarai Pembelian
-                    </h3>
-                    <span id="totalRowCount" class="text-[10px] font-bold bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">0 rekod</span>
-                </div>
-
-                <!-- Penapis Pantas -->
-                <div class="flex gap-1.5 p-1 bg-slate-100 rounded-xl text-[11px] font-semibold">
-                    <button onclick="setStatusFilter('ALL')" id="filterBtnAll" class="flex-1 py-1 rounded-lg bg-white text-slate-800 shadow-xs font-bold">Semua</button>
-                    <button onclick="setStatusFilter('Telah Claim')" id="filterBtnPaid" class="flex-1 py-1 rounded-lg text-slate-500">Claim</button>
-                    <button onclick="setStatusFilter('Belum Claim')" id="filterBtnUnpaid" class="flex-1 py-1 rounded-lg text-slate-500">Belum</button>
-                </div>
-
-                <!-- Carian Pantas -->
-                <div class="relative">
-                    <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5 pointer-events-none"></i>
-                    <input 
-                        type="text" 
-                        id="tableSearchInput" 
-                        placeholder="Cari resit / tarikh..." 
-                        oninput="renderTable()"
-                        class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-amber-400 outline-none"
-                    >
-                </div>
-
-                <!-- Senarai Kad Transaksi iPhone -->
-                <div id="purchaseMobileList" class="space-y-2.5 pt-1">
-                    <!-- Dijana secara automatik oleh JS -->
-                </div>
-            </section>
-        </main>
-
-        <!-- Navigasi Bawah Gaya iOS (Bottom Bar) -->
-        <nav class="bg-white/95 backdrop-blur-md border-t border-slate-200/80 fixed sm:absolute bottom-0 inset-x-0 z-30 px-6 py-2 safe-bottom flex items-center justify-around text-[10px] font-semibold text-slate-400">
-            <button onclick="scrollToTop()" class="flex flex-col items-center gap-0.5 text-amber-600">
-                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                <span>Ringkasan</span>
+            <!-- Submit Button -->
+            <button 
+              type="submit" 
+              id="submitBtn" 
+              class="w-full mt-2 bg-gradient-to-r from-maroon-800 to-maroon-700 hover:from-maroon-900 hover:to-maroon-800 text-white font-bold py-3 px-4 rounded-xl shadow-lg shadow-maroon-900/20 active:scale-[0.98] transition flex items-center justify-center gap-2"
+            >
+              <i id="submitBtnIcon" class="fa-solid fa-floppy-disk text-amber-300"></i>
+              <span id="submitBtnText">Simpan & Hantar ke Sheet</span>
             </button>
-            <button onclick="scrollToSection('sectionForm')" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
-                <i data-lucide="plus-circle" class="w-5 h-5"></i>
-                <span>Tambah</span>
-            </button>
-            <button onclick="scrollToSection('sectionList')" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
-                <i data-lucide="file-text" class="w-5 h-5"></i>
-                <span>Laporan</span>
-            </button>
-            <button onclick="openGoogleSheetModal()" class="flex flex-col items-center gap-0.5 hover:text-slate-800">
-                <i data-lucide="sheet" class="w-5 h-5"></i>
-                <span>Sheet</span>
-            </button>
-        </nav>
-    </div>
-
-    <!-- Modal Konfigurasi Google Sheet & Webhook -->
-    <div id="googleSheetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-end sm:items-center justify-center hidden p-0 sm:p-4">
-        <div class="bg-white rounded-t-3xl sm:rounded-3xl max-w-sm w-full p-5 shadow-2xl border border-slate-100 max-h-[85vh] overflow-y-auto safe-bottom">
-            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold">
-                        <i data-lucide="sheet" class="w-4 h-4"></i>
-                    </div>
-                    <h3 class="text-xs font-bold text-slate-800">Pautan Google Sheet</h3>
-                </div>
-                <button onclick="closeGoogleSheetModal()" class="text-slate-400 hover:text-slate-600 p-1">
-                    <i data-lucide="x" class="w-4 h-4"></i>
-                </button>
-            </div>
-
-            <div class="mt-3 space-y-3 text-xs">
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1 text-[11px]">Apps Script Web App URL:</label>
-                    <input 
-                        type="url" 
-                        id="gsheetWebhookInput" 
-                        placeholder="https://script.google.com/macros/s/AKfycbzLxH3UE0rFQ3cjT2gw69BmhdjwYvSsFgpZRNmqpNntYSoQhetcPXclCxnpkKGlsAQg/exec"
-                        class="w-full px-3 py-2 rounded-xl border border-emerald-300 text-[11px] text-slate-800 focus:ring-1 focus:ring-emerald-500 outline-none bg-emerald-50/30 font-mono"
-                    >
-                </div>
-
-                <div>
-                    <label class="block font-bold text-slate-700 mb-1 text-[11px]">Pautan Google Sheet:</label>
-                    <input 
-                        type="url" 
-                        id="gsheetUrlInput" 
-                        placeholder="https://docs.google.com/spreadsheets/d/..."
-                        class="w-full px-3 py-2 rounded-xl border border-slate-300 text-[11px] text-slate-800 focus:ring-1 focus:ring-amber-400 outline-none"
-                    >
-                </div>
-
-                <div class="flex items-center justify-between pt-2">
-                    <button onclick="testWebhookConnection()" class="px-2.5 py-1.5 rounded-lg bg-slate-100 text-slate-700 font-semibold text-[11px] flex items-center gap-1">
-                        <i data-lucide="activity" class="w-3 h-3 text-emerald-600"></i>
-                        <span>Uji Webhook</span>
-                    </button>
-                    <button onclick="openTargetSheet()" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 text-white font-semibold text-[11px] flex items-center gap-1">
-                        <i data-lucide="external-link" class="w-3 h-3"></i>
-                        <span>Buka Sheet</span>
-                    </button>
-                    <button onclick="saveSheetSettings()" class="px-3 py-1.5 rounded-lg bg-amber-500 text-white font-semibold text-[11px]">
-                        Simpan
-                    </button>
-                </div>
-            </div>
+          </form>
         </div>
-    </div>
 
-    <!-- Modal Pengesahan Padam -->
-    <div id="deleteModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-3xl max-w-xs w-full p-5 text-center shadow-2xl">
-            <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center mx-auto mb-2.5">
-                <i data-lucide="alert-triangle" class="w-5 h-5"></i>
-            </div>
-            <h4 class="text-sm font-bold text-slate-800" id="deleteModalTitle">Padam Rekod Ini?</h4>
-            <p class="text-[11px] text-slate-500 mt-0.5" id="deleteModalDesc">Tindakan ini tidak boleh diundur.</p>
-            <div class="mt-4 flex items-center justify-center gap-2">
-                <button onclick="closeDeleteModal()" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700">Batal</button>
-                <button id="confirmDeleteBtn" onclick="confirmDeleteRecord()" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-rose-600 text-white">Padam</button>
-            </div>
+        <!-- Google Sheet webhook badge status -->
+        <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
+          <span class="flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            Webhook Sheet Aktif
+          </span>
+          <span class="text-slate-400 truncate max-w-[180px]" title="Google Script Exec Endpoint">script.google.com/...</span>
         </div>
+      </div>
+
+      <!-- Visualization Column (7 cols) -->
+      <div class="lg:col-span-7 space-y-6">
+
+        <!-- Visualisasi Status Tuntutan & Bajet Card -->
+        <div class="bg-white rounded-3xl p-6 shadow-sm border border-maroon-100">
+          <div class="flex flex-wrap items-center justify-between gap-2 border-b border-rose-100 pb-3 mb-4">
+            <div>
+              <h3 class="font-bold text-lg text-maroon-950 flex items-center gap-2">
+                <i class="fa-solid fa-chart-pie text-maroon-700"></i>
+                Visualisasi Status & Nisbah Bajet
+              </h3>
+              <p class="text-xs text-slate-500">Perbandingan Telah Claim vs Belum Claim serta Baki Bajet RM1650</p>
+            </div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-rose-50 text-maroon-800">
+              Masa Nyata (Live)
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
+            <!-- Pie Chart Container -->
+            <div class="sm:col-span-7 flex flex-col items-center justify-center relative">
+              <div class="relative w-48 h-48 sm:w-56 sm:h-56">
+                <canvas id="claimsPieChart"></canvas>
+                <!-- Center Egg Decor in Doughnut -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span class="text-2xl">🥚</span>
+                  <span id="chartCenterLabel" class="text-[11px] font-bold text-slate-600 mt-0.5">Status Telur</span>
+                </div>
+              </div>
+              <p class="text-[11px] text-slate-400 mt-2 text-center">Carta pecahan kos mengikut status tuntutan</p>
+            </div>
+
+            <!-- Legend and Budget Gauge Breakdown -->
+            <div class="sm:col-span-5 space-y-3">
+              <!-- Item Telah Claim -->
+              <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-emerald-800 flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-emerald-600 inline-block"></span>
+                    Telah Claim
+                  </span>
+                  <span id="statPieClaimedPct" class="font-semibold text-emerald-700">0%</span>
+                </div>
+                <p id="statPieClaimedVal" class="text-base font-bold text-emerald-900 mt-1">RM 0.00</p>
+              </div>
+
+              <!-- Item Belum Claim -->
+              <div class="p-3 rounded-2xl bg-amber-50/70 border border-amber-200/80">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-bold text-amber-800 flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span>
+                    Belum Claim
+                  </span>
+                  <span id="statPieUnclaimedPct" class="font-semibold text-amber-700">0%</span>
+                </div>
+                <p id="statPieUnclaimedVal" class="text-base font-bold text-amber-900 mt-1">RM 0.00</p>
+              </div>
+
+              <!-- Baki Bajet RM1650 Bar -->
+              <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200">
+                <div class="flex justify-between items-center text-xs mb-1">
+                  <span class="font-bold text-slate-700">Baki Bajet RM1650</span>
+                  <span id="budgetRemainingLabel" class="font-bold text-maroon-700">RM 1,650.00</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                  <div id="budgetProgressBar" class="bg-maroon-600 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                  <span id="spentLabel">Digunakan: RM 0.00</span>
+                  <span id="budgetAlertMsg" class="text-emerald-600 font-medium">Bajet selamat</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Kad Info Ringkas & Tips Mesra -->
+        <div class="bg-gradient-to-r from-rose-50 to-amber-50/50 rounded-2xl p-4 border border-rose-100 flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-white shadow-sm flex items-center justify-center shrink-0 text-amber-600 text-xl border border-rose-200">
+            <i class="fa-solid fa-lightbulb"></i>
+          </div>
+          <div class="text-xs text-slate-600 space-y-0.5">
+            <p class="font-bold text-maroon-900">Tips Pengurusan:</p>
+            <p>Data anda disimpan secara automatik dalam pelayar ini dan disegerakkan ke Google Sheet melalui Webhook. Anda juga boleh menukar status tuntutan bila-bila masa terus dari jadual laporan.</p>
+          </div>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Container Toast Notifikasi iOS Banner -->
-    <div id="toastContainer" class="fixed top-4 inset-x-0 mx-auto z-50 flex flex-col items-center gap-1.5 max-w-[340px] pointer-events-none"></div>
+    <!-- Bottom Section: Laporan Pembelian Telur (Table & Filter) -->
+    <div class="bg-white rounded-3xl p-6 sm:p-7 shadow-sm border border-maroon-100 space-y-4">
+      
+      <!-- Table Header & Controls -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-100">
+        <div>
+          <h3 class="text-lg font-bold text-maroon-950 flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice text-maroon-700"></i>
+            Laporan Terperinci Pembelian Telur
+          </h3>
+          <p class="text-xs text-slate-500">Senarai penuh transaksi mengikut tarikh, kuantiti papan dan harga</p>
+        </div>
 
-    <!-- Skrip Pengendalian Penuh -->
-    <script>
-        const TOTAL_BUDGET = 1650.00;
-        let purchaseRecords = [];
-        let currentFilter = 'ALL';
-        let claimsChart = null;
-        let pendingDeleteId = null;
+        <!-- Filter & Search Controls -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Filter by Status -->
+          <select id="filterStatus" onchange="renderTable()" class="text-xs bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-maroon-200">
+            <option value="ALL">Semua Status</option>
+            <option value="Telah Claim">Telah Claim</option>
+            <option value="Belum Claim">Belum Claim</option>
+          </select>
 
-        window.onload = function() {
-            const today = new Date().toISOString().split('T')[0];
-            const dateInput = document.getElementById('purchaseDate');
-            if (dateInput) dateInput.value = today;
+          <!-- Search Box -->
+          <div class="relative">
+            <input 
+              type="text" 
+              id="searchKeyword" 
+              oninput="renderTable()" 
+              placeholder="Cari tarikh / kedai..." 
+              class="text-xs bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3 py-2 text-slate-700 outline-none focus:ring-2 focus:ring-maroon-200 w-40 sm:w-48"
+            >
+            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-slate-400 text-xs"></i>
+          </div>
 
-            loadSavedSettings();
-            loadRecords();
-            initChart();
-            renderDashboard();
-            lucide.createIcons();
+          <!-- Export CSV Button -->
+          <button onclick="exportToCSV()" class="text-xs bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded-xl transition flex items-center gap-1.5 shadow-sm active:scale-95 font-medium">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Eksport CSV</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Responsive Compact Table Container (table-fixed, no horizontal scroll) -->
+      <div class="w-full rounded-2xl border border-slate-200 overflow-hidden">
+        <table class="w-full table-fixed border-collapse text-[11px] sm:text-xs">
+          <colgroup>
+            <col style="width: 5%;">   <!-- Bil -->
+            <col style="width: 14%;">  <!-- Tarikh -->
+            <col style="width: 11%;">  <!-- Kuantiti -->
+            <col style="width: 13%;">  <!-- Harga -->
+            <col style="width: 11%;">  <!-- RM/Papan -->
+            <col style="width: 17%;">  <!-- Status -->
+            <col style="width: 15%;">  <!-- Catatan -->
+            <col style="width: 7%;">   <!-- Sheet -->
+            <col style="width: 7%;">   <!-- Tindakan -->
+          </colgroup>
+          <thead>
+            <tr class="bg-gradient-to-r from-maroon-900 to-maroon-800 text-white font-semibold">
+              <th class="py-2.5 px-1.5 text-center">Bil</th>
+              <th class="py-2.5 px-2 text-left">Tarikh</th>
+              <th class="py-2.5 px-1 text-center">Kuantiti</th>
+              <th class="py-2.5 px-2 text-right">Harga</th>
+              <th class="py-2.5 px-1 text-center">RM/Papan</th>
+              <th class="py-2.5 px-2 text-center">Status</th>
+              <th class="py-2.5 px-2 text-left">Catatan</th>
+              <th class="py-2.5 px-1 text-center" title="Status Hantar Google Sheet">Sheet</th>
+              <th class="py-2.5 px-1 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="transactionTableBody" class="divide-y divide-slate-100 bg-white">
+            <!-- Dynamic rows will be inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Table Empty State -->
+      <div id="tableEmptyState" class="hidden text-center py-12 space-y-3">
+        <div class="w-16 h-16 rounded-full bg-rose-50 text-maroon-600 flex items-center justify-center mx-auto text-2xl">
+          <i class="fa-solid fa-egg"></i>
+        </div>
+        <p class="font-semibold text-slate-700 text-sm">Belum ada rekod pembelian dijumpai.</p>
+        <p class="text-xs text-slate-400 max-w-sm mx-auto">Sila isi borang di atas untuk memulakan penjejakan bajet pembelian telur anda.</p>
+      </div>
+
+      <!-- Table Footer Summary -->
+      <div class="flex flex-col sm:flex-row justify-between items-center text-xs text-slate-500 pt-2 gap-2">
+        <div id="tableRecordCount">Menunjukkan 0 rekod</div>
+        <div class="flex items-center gap-4">
+          <span class="font-medium text-slate-700">Jumlah Paparan: <strong id="tableFilteredTotal" class="text-maroon-800">RM 0.00</strong></span>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-maroon-950 text-rose-200/80 text-xs py-5 px-4 border-t border-maroon-800 mt-10">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <div class="flex items-center gap-2">
+        <span class="text-amber-400 font-bold">🥚 Track Telur</span>
+        <span>• Sistem Penjejakan Bajet Pembelian Telur (RM1,650.00)</span>
+      </div>
+      <div>
+        <span>Disambungkan ke Google Apps Script Webhook</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Custom Alert / Toast Modal -->
+  <div id="customToast" class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none max-w-md w-full px-4">
+    <div id="toastBox" class="rounded-2xl p-4 shadow-2xl flex items-center gap-3 border text-white backdrop-blur-md">
+      <div id="toastIcon" class="text-xl shrink-0"></div>
+      <div class="flex-grow">
+        <p id="toastTitle" class="font-bold text-xs uppercase tracking-wider"></p>
+        <p id="toastMessage" class="text-xs mt-0.5"></p>
+      </div>
+      <button onclick="hideToast()" class="text-white/70 hover:text-white p-1">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Custom Confirmation Dialog (Replaces native confirm) -->
+  <div id="confirmModal" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl border border-rose-100 space-y-4 animate-in fade-in zoom-in duration-150">
+      <div class="w-12 h-12 rounded-2xl bg-rose-100 text-maroon-700 flex items-center justify-center text-xl mx-auto">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <div class="text-center space-y-1">
+        <h4 id="confirmModalTitle" class="font-bold text-slate-800 text-base">Sahkan Tindakan</h4>
+        <p id="confirmModalText" class="text-xs text-slate-500">Adakah anda pasti mahu memadam rekod ini?</p>
+      </div>
+      <div class="grid grid-cols-2 gap-3 pt-2">
+        <button id="confirmCancelBtn" class="py-2.5 px-4 rounded-xl border border-slate-300 text-slate-700 text-xs font-semibold hover:bg-slate-100 transition">
+          Batal
+        </button>
+        <button id="confirmOkBtn" class="py-2.5 px-4 rounded-xl bg-maroon-700 hover:bg-maroon-800 text-white text-xs font-bold transition shadow-md shadow-maroon-900/20">
+          Ya, Teruskan
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Logic -->
+  <script>
+    // Constants
+    const TOTAL_BUDGET = 1650.00;
+    const WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbzLxH3UE0rFQ3cjT2gw69BmhdjwYvSsFgpZRNmqpNntYSoQhetcPXclCxnpkKGlsAQg/exec';
+    const STORAGE_KEY = 'telur_purchases_data_v1';
+
+    // Application State
+    let purchases = [];
+    let myChart = null;
+    let editingId = null;
+
+    // Toast Notification Utility
+    let toastTimeout = null;
+    function showToast(type, title, message) {
+      const toast = document.getElementById('customToast');
+      const box = document.getElementById('toastBox');
+      const icon = document.getElementById('toastIcon');
+      const titleEl = document.getElementById('toastTitle');
+      const msgEl = document.getElementById('toastMessage');
+
+      clearTimeout(toastTimeout);
+
+      if (type === 'success') {
+        box.className = 'rounded-2xl p-4 shadow-2xl flex items-center gap-3 border text-white backdrop-blur-md bg-emerald-800/95 border-emerald-500';
+        icon.innerHTML = '<i class="fa-solid fa-circle-check text-emerald-300"></i>';
+      } else if (type === 'error') {
+        box.className = 'rounded-2xl p-4 shadow-2xl flex items-center gap-3 border text-white backdrop-blur-md bg-rose-900/95 border-rose-500';
+        icon.innerHTML = '<i class="fa-solid fa-circle-exclamation text-rose-300"></i>';
+      } else {
+        box.className = 'rounded-2xl p-4 shadow-2xl flex items-center gap-3 border text-white backdrop-blur-md bg-maroon-900/95 border-maroon-500';
+        icon.innerHTML = '<i class="fa-solid fa-circle-info text-amber-300"></i>';
+      }
+
+      titleEl.textContent = title;
+      msgEl.textContent = message;
+
+      toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+      toastTimeout = setTimeout(hideToast, 4000);
+    }
+
+    function hideToast() {
+      const toast = document.getElementById('customToast');
+      toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+    }
+
+    // Modal Confirmation Dialog (No window.confirm!)
+    function openConfirmModal(title, message, onConfirm) {
+      const modal = document.getElementById('confirmModal');
+      const modalTitle = document.getElementById('confirmModalTitle');
+      const modalText = document.getElementById('confirmModalText');
+      const okBtn = document.getElementById('confirmOkBtn');
+      const cancelBtn = document.getElementById('confirmCancelBtn');
+
+      modalTitle.textContent = title;
+      modalText.textContent = message;
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const cleanup = () => {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        okBtn.onclick = null;
+        cancelBtn.onclick = null;
+      };
+
+      cancelBtn.onclick = cleanup;
+      okBtn.onclick = () => {
+        cleanup();
+        onConfirm();
+      };
+    }
+
+    // Load initial data (Tiada data contoh, sedia digunakan terus)
+    function loadInitialData() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          purchases = JSON.parse(stored);
+        } else {
+          purchases = [];
+          saveToLocalStorage();
+        }
+      } catch (err) {
+        console.error('Error loading stored purchases:', err);
+        purchases = [];
+      }
+    }
+
+    function getFormattedDateOffset(dayOffset) {
+      const d = new Date();
+      d.setDate(d.getDate() + dayOffset);
+      return d.toISOString().split('T')[0];
+    }
+
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(purchases));
+      } catch (e) {
+        console.warn('LocalStorage save error:', e);
+      }
+    }
+
+    // Webhook Sync to Google Sheet
+    async function syncToGoogleSheet(record) {
+      try {
+        // Send payload via POST to Google Apps Script Webhook
+        const payload = {
+          action: editingId ? 'UPDATE' : 'SAVE',
+          id: record.id,
+          tarikh: record.date,
+          kuantiti_papan: record.quantity,
+          harga: record.price,
+          status: record.status,
+          catatan: record.notes || '-',
+          timestamp: record.timestamp || new Date().toISOString()
         };
 
-        function scrollToTop() {
-            const main = document.querySelector('main');
-            if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
-        }
+        // Note: Google Apps Script Webhooks typically require mode 'no-cors' from browsers 
+        // to avoid CORS redirection blocks, or standard JSON request.
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
 
-        function scrollToSection(id) {
-            const el = document.getElementById(id);
-            if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }
+        record.synced = true;
+        saveToLocalStorage();
+        renderTable();
+        return true;
+      } catch (error) {
+        console.error('Webhook sync failed:', error);
+        return false;
+      }
+    }
 
-        function loadRecords() {
-            try {
-                const stored = localStorage.getItem('egg_purchase_records_v2');
-                if (stored) {
-                    purchaseRecords = JSON.parse(stored);
-                } else {
-                    purchaseRecords = [
-                        { id: 'EGG-1001', tarikh: '2026-10-25', kuantiti: 10, unit: 'Papan', harga: 145.00, status: 'Telah Claim', nota: 'Pembekal Ladang A' },
-                        { id: 'EGG-1002', tarikh: '2026-10-28', kuantiti: 12, unit: 'Papan', harga: 174.00, status: 'Belum Claim', nota: 'Resit No. 4410' },
-                        { id: 'EGG-1003', tarikh: '2026-10-30', kuantiti: 8, unit: 'Papan', harga: 116.00, status: 'Telah Claim', nota: 'Telur Gred A' }
-                    ];
-                    saveRecords();
+    // Send all unsynced items
+    async function sendAllUnsynced() {
+      const unsynced = purchases.filter(p => !p.synced);
+      if (unsynced.length === 0) {
+        showToast('info', 'Semua Telah Disegerak', 'Tiada rekod baharu yang menunggu untuk dimuat naik ke Google Sheet.');
+        return;
+      }
+
+      const syncBtn = document.getElementById('refreshSyncBtn');
+      const originalHTML = syncBtn.innerHTML;
+      syncBtn.disabled = true;
+      syncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Menghantar...';
+
+      let count = 0;
+      for (const item of unsynced) {
+        await syncToGoogleSheet(item);
+        count++;
+      }
+
+      syncBtn.disabled = false;
+      syncBtn.innerHTML = originalHTML;
+
+      showToast('success', 'Penyegerakan Selesai', `${count} rekod telah dihantar ke Google Sheet.`);
+    }
+
+    // Single item sync trigger from table
+    async function syncSingleRecord(id) {
+      const record = purchases.find(p => p.id === id);
+      if (!record) return;
+
+      showToast('info', 'Menghantar Data...', `Sedang memindahkan rekod ${record.date} ke Google Sheet.`);
+      const success = await syncToGoogleSheet(record);
+      if (success) {
+        showToast('success', 'Berjaya Dihantar', 'Data berjaya diselaraskan ke Google Sheet.');
+      }
+    }
+
+    // Set form into Edit Mode
+    function startEditRecord(id) {
+      const record = purchases.find(p => p.id === id);
+      if (!record) return;
+
+      editingId = id;
+      document.getElementById('editingRecordId').value = id;
+      document.getElementById('purchaseDate').value = record.date;
+      document.getElementById('quantity').value = record.quantity;
+      document.getElementById('price').value = record.price;
+      document.getElementById('notes').value = record.notes || '';
+
+      const radio = document.querySelector(`input[name="claimStatus"][value="${record.status}"]`);
+      if (radio) radio.checked = true;
+
+      // Update Form UI to edit state
+      const formTitle = document.getElementById('formTitle');
+      if (formTitle) formTitle.textContent = 'Kemaskini Belian Telur';
+
+      const formSubtitle = document.getElementById('formSubtitle');
+      if (formSubtitle) formSubtitle.textContent = `Mengemaskini rekod bertarikh ${formatDisplayDate(record.date)}`;
+
+      const submitBtnText = document.getElementById('submitBtnText');
+      if (submitBtnText) submitBtnText.textContent = 'Kemaskini & Segerak ke Sheet';
+
+      const submitBtnIcon = document.getElementById('submitBtnIcon');
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-pen-to-square text-amber-300';
+
+      const formHeaderIcon = document.getElementById('formHeaderIcon');
+      if (formHeaderIcon) formHeaderIcon.className = 'w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center shadow-md shadow-amber-900/20';
+      
+      const cancelBtn = document.getElementById('cancelEditBtn');
+      if (cancelBtn) {
+        cancelBtn.classList.remove('hidden');
+        cancelBtn.classList.add('inline-flex');
+      }
+
+      // Scroll smoothly to form on mobile devices
+      document.getElementById('purchaseForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      showToast('info', 'Mod Kemaskini', 'Sila ubah data yang diingini dan tekan "Kemaskini".');
+    }
+
+    // Cancel Edit Mode
+    function cancelEditMode() {
+      editingId = null;
+      const editInput = document.getElementById('editingRecordId');
+      if (editInput) editInput.value = '';
+
+      const form = document.getElementById('purchaseForm');
+      if (form) form.reset();
+
+      const purchaseDate = document.getElementById('purchaseDate');
+      if (purchaseDate) purchaseDate.value = new Date().toISOString().split('T')[0];
+
+      const defaultRadio = document.querySelector('input[name="claimStatus"][value="Belum Claim"]');
+      if (defaultRadio) defaultRadio.checked = true;
+
+      const formTitle = document.getElementById('formTitle');
+      if (formTitle) formTitle.textContent = 'Borang Beli Telur';
+
+      const formSubtitle = document.getElementById('formSubtitle');
+      if (formSubtitle) formSubtitle.textContent = 'Isi maklumat belian papan telur di bawah';
+
+      const submitBtnText = document.getElementById('submitBtnText');
+      if (submitBtnText) submitBtnText.textContent = 'Simpan & Hantar ke Sheet';
+
+      const submitBtnIcon = document.getElementById('submitBtnIcon');
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-floppy-disk text-amber-300';
+
+      const formHeaderIcon = document.getElementById('formHeaderIcon');
+      if (formHeaderIcon) formHeaderIcon.className = 'w-10 h-10 rounded-xl bg-maroon-700 text-white flex items-center justify-center shadow-md shadow-maroon-900/20';
+
+      const cancelBtn = document.getElementById('cancelEditBtn');
+      if (cancelBtn) {
+        cancelBtn.classList.add('hidden');
+        cancelBtn.classList.remove('inline-flex');
+      }
+    }
+
+    // Handle Form Submission with Duplicate Checking & In-place Updating
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+
+      const dateVal = document.getElementById('purchaseDate').value;
+      const qtyVal = parseInt(document.getElementById('quantity').value, 10);
+      const priceVal = parseFloat(document.getElementById('price').value);
+      const statusVal = document.querySelector('input[name="claimStatus"]:checked')?.value || 'Belum Claim';
+      const notesVal = document.getElementById('notes').value.trim();
+
+      if (!dateVal || isNaN(qtyVal) || qtyVal <= 0 || isNaN(priceVal) || priceVal <= 0) {
+        showToast('error', 'Maklumat Tidak Lengkap', 'Sila pastikan tarikh, kuantiti papan dan harga diisi dengan betul.');
+        return;
+      }
+
+      // Check if this matches an existing record on the same date with same quantity to avoid unwanted duplicates
+      const duplicateExisting = purchases.find(p => 
+        p.id !== editingId && 
+        p.date === dateVal && 
+        p.quantity === qtyVal && 
+        Math.abs(p.price - priceVal) < 0.01
+      );
+
+      if (duplicateExisting && !editingId) {
+        openConfirmModal(
+          'Rekod Serupa Dikesan!',
+          `Sudah ada belian ${qtyVal} papan berharga RM${priceVal.toFixed(2)} pada tarikh ${formatDisplayDate(dateVal)}. Adakah anda mahu mengemaskini rekod sedia ada tersebut dan bukannya mencipta rekod pendua?`,
+          () => {
+            // User chose to update the existing duplicate
+            applySaveOrUpdate(duplicateExisting.id, dateVal, qtyVal, priceVal, statusVal, notesVal);
+          }
+        );
+        return;
+      }
+
+      applySaveOrUpdate(editingId, dateVal, qtyVal, priceVal, statusVal, notesVal);
+    }
+
+    // Perform actual save or update
+    async function applySaveOrUpdate(recordId, dateVal, qtyVal, priceVal, statusVal, notesVal) {
+      const submitBtn = document.getElementById('submitBtn');
+      const submitBtnText = document.getElementById('submitBtnText');
+      const submitBtnIcon = document.getElementById('submitBtnIcon');
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (submitBtnIcon) submitBtnIcon.className = 'fa-solid fa-spinner fa-spin text-amber-300';
+      if (submitBtnText) submitBtnText.textContent = 'Sedang Memproses...';
+
+      let targetRecord = null;
+
+      if (recordId) {
+        // UPDATE EXISTING RECORD IN-PLACE
+        const existingIdx = purchases.findIndex(p => p.id === recordId);
+        if (existingIdx !== -1) {
+          purchases[existingIdx] = {
+            ...purchases[existingIdx],
+            date: dateVal,
+            quantity: qtyVal,
+            price: Number(priceVal.toFixed(2)),
+            status: statusVal,
+            notes: notesVal,
+            synced: false,
+            updatedAt: new Date().toISOString()
+          };
+          targetRecord = purchases[existingIdx];
+        }
+      }
+
+      if (!targetRecord) {
+        // CREATE NEW RECORD
+        targetRecord = {
+          id: 'txn_' + Date.now(),
+          date: dateVal,
+          quantity: qtyVal,
+          price: Number(priceVal.toFixed(2)),
+          status: statusVal,
+          notes: notesVal,
+          synced: false,
+          timestamp: new Date().toISOString()
+        };
+        purchases.unshift(targetRecord);
+      }
+
+      saveToLocalStorage();
+
+      // Trigger Webhook Sync in background
+      syncToGoogleSheet(targetRecord);
+
+      // Refresh UI components
+      updateKPIs();
+      updateChart();
+      renderTable();
+
+      const wasEditing = Boolean(recordId);
+      cancelEditMode();
+
+      if (submitBtn) submitBtn.disabled = false;
+
+      showToast(
+        'success', 
+        wasEditing ? 'Rekod Dikemaskini!' : 'Rekod Disimpan!', 
+        wasEditing 
+          ? `Maklumat belian ${qtyVal} papan pada ${formatDisplayDate(dateVal)} berjaya dikemaskini tanpa rekod berganda.` 
+          : `Belian ${qtyVal} papan bernilai RM${priceVal.toFixed(2)} berjaya ditambah.`
+      );
+    }
+
+    // Toggle Claim Status directly from Table
+    function toggleStatus(id) {
+      const record = purchases.find(p => p.id === id);
+      if (!record) return;
+
+      const newStatus = record.status === 'Telah Claim' ? 'Belum Claim' : 'Telah Claim';
+      record.status = newStatus;
+      record.synced = false; // Mark for resync to reflect changes
+
+      saveToLocalStorage();
+      updateKPIs();
+      updateChart();
+      renderTable();
+
+      showToast('info', 'Status Dikemaskini', `Status untuk transaksi tarikh ${record.date} telah ditukar kepada "${newStatus}".`);
+
+      // Attempt async sync update
+      syncToGoogleSheet(record);
+    }
+
+    // Padam rekod di Google Sheet melalui Webhook
+    async function deleteFromGoogleSheet(record) {
+      if (!record) return;
+      try {
+        const payload = {
+          action: 'DELETE',
+          id: record.id,
+          tarikh: record.date,
+          kuantiti_papan: record.quantity,
+          harga: record.price
+        };
+
+        await fetch(WEBHOOK_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        });
+      } catch (error) {
+        console.error('Gagal memadam dari Google Sheet:', error);
+      }
+    }
+
+    // Delete Record
+    function deleteRecord(id) {
+      const recordToDelete = purchases.find(p => p.id === id);
+      if (!recordToDelete) return;
+
+      openConfirmModal(
+        'Padam Rekod Pembelian?',
+        `Adakah anda pasti mahu memadam rekod bertarikh ${formatDisplayDate(recordToDelete.date)}? Data di halaman dan di Google Sheet akan turut dipadam.`,
+        () => {
+          // Hantar webhook untuk memadam baris dalam Google Sheet
+          deleteFromGoogleSheet(recordToDelete);
+
+          // Padam rekod daripada simpanan web
+          purchases = purchases.filter(p => p.id !== id);
+          saveToLocalStorage();
+          updateKPIs();
+          updateChart();
+          renderTable();
+          showToast('success', 'Rekod Dipadam', 'Rekod telah dipadam daripada sistem dan Google Sheet.');
+        }
+      );
+    }
+
+    // Update KPI summary cards
+    function updateKPIs() {
+      const totalSpent = purchases.reduce((sum, item) => sum + item.price, 0);
+      const totalTrays = purchases.reduce((sum, item) => sum + item.quantity, 0);
+
+      const claimedItems = purchases.filter(item => item.status === 'Telah Claim');
+      const claimedTotal = claimedItems.reduce((sum, item) => sum + item.price, 0);
+      const claimedTrays = claimedItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      const unclaimedItems = purchases.filter(item => item.status === 'Belum Claim');
+      const unclaimedTotal = unclaimedItems.reduce((sum, item) => sum + item.price, 0);
+      const unclaimedTrays = unclaimedItems.reduce((sum, item) => sum + item.quantity, 0);
+
+      const remainingBudget = Math.max(0, TOTAL_BUDGET - totalSpent);
+      const spentPercent = Math.min(100, (totalSpent / TOTAL_BUDGET) * 100);
+
+      // DOM Updates
+      document.getElementById('kpiTotalSpent').textContent = `RM ${totalSpent.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('kpiSpentPercent').textContent = `${spentPercent.toFixed(1)}% dari bajet`;
+      document.getElementById('kpiTotalTrays').textContent = `${totalTrays} Papan`;
+
+      document.getElementById('kpiClaimed').textContent = `RM ${claimedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('kpiClaimedTrays').textContent = `${claimedTrays} papan di-claim`;
+      document.getElementById('kpiClaimedCount').textContent = `${claimedItems.length} rekod`;
+
+      document.getElementById('kpiUnclaimed').textContent = `RM ${unclaimedTotal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      document.getElementById('kpiUnclaimedTrays').textContent = `${unclaimedTrays} papan belum claim`;
+      document.getElementById('kpiUnclaimedCount').textContent = `${unclaimedItems.length} rekod`;
+
+      // Stat box beside pie
+      document.getElementById('statPieClaimedVal').textContent = `RM ${claimedTotal.toFixed(2)}`;
+      document.getElementById('statPieUnclaimedVal').textContent = `RM ${unclaimedTotal.toFixed(2)}`;
+
+      const totalClaimsTracked = claimedTotal + unclaimedTotal;
+      const claimedPct = totalClaimsTracked > 0 ? ((claimedTotal / totalClaimsTracked) * 100).toFixed(0) : 0;
+      const unclaimedPct = totalClaimsTracked > 0 ? ((unclaimedTotal / totalClaimsTracked) * 100).toFixed(0) : 0;
+
+      document.getElementById('statPieClaimedPct').textContent = `${claimedPct}%`;
+      document.getElementById('statPieUnclaimedPct').textContent = `${unclaimedPct}%`;
+
+      // Budget Progress Bar
+      const budgetRemainingEl = document.getElementById('budgetRemainingLabel');
+      budgetRemainingEl.textContent = `RM ${remainingBudget.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      
+      const progressBar = document.getElementById('budgetProgressBar');
+      progressBar.style.width = `${spentPercent}%`;
+
+      document.getElementById('spentLabel').textContent = `Digunakan: RM ${totalSpent.toFixed(2)}`;
+
+      const alertMsg = document.getElementById('budgetAlertMsg');
+      if (totalSpent > TOTAL_BUDGET) {
+        alertMsg.textContent = 'Melebihi bajet!';
+        alertMsg.className = 'text-rose-600 font-bold';
+        progressBar.classList.remove('bg-maroon-600');
+        progressBar.classList.add('bg-red-600');
+      } else if (spentPercent > 80) {
+        alertMsg.textContent = 'Hampir habis';
+        alertMsg.className = 'text-amber-600 font-semibold';
+        progressBar.classList.remove('bg-maroon-600');
+        progressBar.classList.add('bg-amber-500');
+      } else {
+        alertMsg.textContent = 'Bajet selamat';
+        alertMsg.className = 'text-emerald-600 font-medium';
+        progressBar.classList.add('bg-maroon-600');
+        progressBar.classList.remove('bg-amber-500', 'bg-red-600');
+      }
+    }
+
+    // Chart.js Setup and Update (Pie/Doughnut Chart)
+    function initChart() {
+      const ctx = document.getElementById('claimsPieChart').getContext('2d');
+      myChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Telah Claim', 'Belum Claim'],
+          datasets: [{
+            data: [0, 0],
+            backgroundColor: [
+              '#059669', // Emerald 600
+              '#f59e0b', // Amber 500
+            ],
+            hoverBackgroundColor: [
+              '#047857',
+              '#d97706',
+            ],
+            borderWidth: 3,
+            borderColor: '#ffffff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '70%',
+          plugins: {
+            legend: {
+              display: false // We use our own customized badge legend
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const val = context.raw || 0;
+                  return ` ${label}: RM ${Number(val).toFixed(2)}`;
                 }
-            } catch (e) {
-                purchaseRecords = [];
+              }
             }
+          }
         }
+      });
+      updateChart();
+    }
 
-        function saveRecords() {
-            localStorage.setItem('egg_purchase_records_v2', JSON.stringify(purchaseRecords));
+    function updateChart() {
+      if (!myChart) return;
+
+      const claimedTotal = purchases
+        .filter(item => item.status === 'Telah Claim')
+        .reduce((sum, item) => sum + item.price, 0);
+
+      const unclaimedTotal = purchases
+        .filter(item => item.status === 'Belum Claim')
+        .reduce((sum, item) => sum + item.price, 0);
+
+      // If both are zero, show dummy slice so chart doesn't break
+      if (claimedTotal === 0 && unclaimedTotal === 0) {
+        myChart.data.datasets[0].data = [0.01, 0];
+        myChart.data.datasets[0].backgroundColor = ['#e2e8f0', '#e2e8f0'];
+      } else {
+        myChart.data.datasets[0].data = [claimedTotal, unclaimedTotal];
+        myChart.data.datasets[0].backgroundColor = ['#059669', '#f59e0b'];
+      }
+
+      myChart.update();
+    }
+
+    // Render Table Report
+    function renderTable() {
+      const tbody = document.getElementById('transactionTableBody');
+      const emptyState = document.getElementById('tableEmptyState');
+      const filterStatus = document.getElementById('filterStatus').value;
+      const searchKeyword = document.getElementById('searchKeyword').value.toLowerCase().trim();
+
+      // Filter logic
+      const filtered = purchases.filter(item => {
+        const matchesStatus = (filterStatus === 'ALL') || (item.status === filterStatus);
+        const matchesSearch = !searchKeyword || 
+          item.date.toLowerCase().includes(searchKeyword) ||
+          (item.notes && item.notes.toLowerCase().includes(searchKeyword)) ||
+          item.price.toString().includes(searchKeyword) ||
+          item.quantity.toString().includes(searchKeyword);
+        return matchesStatus && matchesSearch;
+      });
+
+      // Clear existing
+      tbody.innerHTML = '';
+
+      if (filtered.length === 0) {
+        emptyState.classList.remove('hidden');
+      } else {
+        emptyState.classList.add('hidden');
+
+        filtered.forEach((item, index) => {
+          const row = document.createElement('tr');
+          row.className = 'hover:bg-rose-50/40 transition-colors';
+
+          const pricePerTray = item.quantity > 0 ? (item.price / item.quantity).toFixed(2) : '0.00';
+          const isClaimed = item.status === 'Telah Claim';
+
+          row.innerHTML = `
+            <td class="py-2 px-1 text-center font-medium text-slate-500">${index + 1}</td>
+            <td class="py-2 px-2 font-semibold text-slate-800 break-words leading-tight">
+              ${formatDisplayDate(item.date)}
+            </td>
+            <td class="py-2 px-1 text-center font-bold text-slate-700">
+              <span class="inline-block bg-rose-50 text-maroon-900 px-1.5 py-0.5 rounded text-[11px]">
+                ${item.quantity} Ppn
+              </span>
+            </td>
+            <td class="py-2 px-2 text-right font-bold text-maroon-900 truncate">
+              RM ${item.price.toFixed(2)}
+            </td>
+            <td class="py-2 px-1 text-center text-slate-600 font-medium truncate">
+              RM ${pricePerTray}
+            </td>
+            <td class="py-2 px-1.5 text-center">
+              <button 
+                onclick="toggleStatus('${item.id}')"
+                title="Klik untuk ubah status"
+                class="w-full inline-flex items-center justify-center gap-1 px-1.5 py-1 rounded-lg text-[10px] font-bold transition-all shadow-sm active:scale-95 truncate ${
+                  isClaimed 
+                    ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300' 
+                    : 'bg-amber-100 text-amber-800 hover:bg-amber-200 border border-amber-300'
+                }"
+              >
+                <i class="fa-solid ${isClaimed ? 'fa-check text-emerald-600' : 'fa-clock text-amber-600'} shrink-0"></i>
+                <span class="truncate">${item.status}</span>
+              </button>
+            </td>
+            <td class="py-2 px-2 text-slate-600 truncate" title="${escapeHtml(item.notes || '-')}">
+              ${escapeHtml(item.notes || '-')}
+            </td>
+            <td class="py-2 px-1 text-center">
+              ${item.synced 
+                ? '<span class="inline-flex items-center text-emerald-600 text-sm" title="Telah dihantar ke Google Sheet"><i class="fa-solid fa-cloud-check"></i></span>'
+                : `<button onclick="syncSingleRecord('${item.id}')" class="p-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 transition" title="Klik untuk hantar"><i class="fa-solid fa-cloud-arrow-up"></i></button>`
+              }
+            </td>
+            <td class="py-2 px-1 text-center space-x-1">
+              <button 
+                onclick="startEditRecord('${item.id}')" 
+                class="p-1 text-amber-700 hover:text-white hover:bg-amber-600 rounded transition"
+                title="Edit Rekod"
+              >
+                <i class="fa-regular fa-pen-to-square"></i>
+              </button>
+              <button 
+                onclick="deleteRecord('${item.id}')" 
+                class="p-1 text-rose-600 hover:text-white hover:bg-rose-600 rounded transition"
+                title="Padam Rekod"
+              >
+                <i class="fa-regular fa-trash-can"></i>
+              </button>
+            </td>
+          </tr>
+        `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // Update filtered totals in table footer
+      const filteredTotalAmount = filtered.reduce((sum, it) => sum + it.price, 0);
+      document.getElementById('tableFilteredTotal').textContent = `RM ${filteredTotalAmount.toFixed(2)}`;
+      document.getElementById('tableRecordCount').textContent = `Menunjukkan ${filtered.length} daripada ${purchases.length} rekod`;
+    }
+
+    // Helper: Formatter for readable Date
+    function formatDisplayDate(dateStr) {
+      if (!dateStr) return '-';
+      try {
+        const parts = dateStr.split('-');
+        if (parts.length === 3) {
+          return `${parts[2]}/${parts[1]}/${parts[0]}`;
         }
-
-        function loadSavedSettings() {
-            const savedWebhook = localStorage.getItem('egg_tracker_webhook_url') || '';
-            const savedSheet = localStorage.getItem('egg_tracker_sheet_url') || '';
-            const webhookInput = document.getElementById('gsheetWebhookInput');
-            const sheetInput = document.getElementById('gsheetUrlInput');
-            if (webhookInput) webhookInput.value = savedWebhook;
-            if (sheetInput) sheetInput.value = savedSheet;
-        }
-
-        function saveSheetSettings() {
-            const webhookVal = document.getElementById('gsheetWebhookInput').value.trim();
-            const sheetVal = document.getElementById('gsheetUrlInput').value.trim();
-            localStorage.setItem('egg_tracker_webhook_url', webhookVal);
-            localStorage.setItem('egg_tracker_sheet_url', sheetVal);
-            showToast('Tetapan Google Sheet disimpan!', 'success');
-            closeGoogleSheetModal();
-        }
-
-        function openGoogleSheetModal() {
-            const modal = document.getElementById('googleSheetModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeGoogleSheetModal() {
-            const modal = document.getElementById('googleSheetModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function openTargetSheet() {
-            const sheetUrl = localStorage.getItem('egg_tracker_sheet_url');
-            if (sheetUrl && sheetUrl.startsWith('http')) {
-                window.open(sheetUrl, '_blank');
-            } else {
-                showToast('Sila masukkan Pautan Google Sheet terlebih dahulu.', 'warning');
-            }
-        }
-
-        function calculateUnitPreview() {
-            const qty = parseFloat(document.getElementById('quantity').value) || 0;
-            const price = parseFloat(document.getElementById('price').value) || 0;
-            const unit = document.getElementById('unitType').value;
-            const hint = document.getElementById('unitPriceHint');
-
-            if (qty > 0 && price > 0) {
-                const perUnit = (price / qty).toFixed(2);
-                hint.textContent = `~RM ${perUnit} / ${unit}`;
-            } else {
-                hint.textContent = '';
-            }
-        }
-
-        async function handleFormSubmit(e) {
-            e.preventDefault();
-            const editId = document.getElementById('editHiddenId').value;
-            const date = document.getElementById('purchaseDate').value;
-            const quantity = parseInt(document.getElementById('quantity').value, 10);
-            const unit = document.getElementById('unitType').value;
-            const price = parseFloat(document.getElementById('price').value);
-            const status = document.querySelector('input[name="claimStatus"]:checked').value;
-            const note = document.getElementById('purchaseNote').value.trim() || '-';
-
-            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-
-            if (editId) {
-                const idx = purchaseRecords.findIndex(r => r.id === editId);
-                let updatedRecord = null;
-                if (idx !== -1) {
-                    updatedRecord = {
-                        ...purchaseRecords[idx],
-                        tarikh: date,
-                        kuantiti: quantity,
-                        unit: unit,
-                        harga: price,
-                        status: status,
-                        nota: note
-                    };
-                    purchaseRecords[idx] = updatedRecord;
-                    showToast('Rekod dikemaskini!', 'success');
-                }
-                cancelEditing();
-                saveRecords();
-                renderDashboard();
-                if (updatedRecord && webhookUrl) {
-                    syncWithGoogleAppsScript(updatedRecord);
-                }
-            } else {
-                const newRecord = {
-                    id: 'REC-' + Date.now().toString().slice(-6),
-                    tarikh: date,
-                    kuantiti: quantity,
-                    unit: unit,
-                    harga: price,
-                    status: status,
-                    nota: note,
-                    timestamp: new Date().toLocaleString('ms-MY')
-                };
-                purchaseRecords.unshift(newRecord);
-                saveRecords();
-                renderDashboard();
-
-                if (!webhookUrl) {
-                    showToast('Rekod disimpan secara setempat! Sila pautkan Webhook Sheet.', 'warning');
-                } else {
-                    showToast('Menghantar rekod ke Google Sheet...', 'info');
-                    await syncWithGoogleAppsScript(newRecord);
-                }
-            }
-
-            // Reset borang
-            document.getElementById('quantity').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('purchaseNote').value = '';
-            document.getElementById('unitPriceHint').textContent = '';
-        }
-
-        function startEditRecord(id) {
-            const record = purchaseRecords.find(r => r.id === id);
-            if (!record) return;
-
-            document.getElementById('editHiddenId').value = record.id;
-            document.getElementById('purchaseDate').value = record.tarikh;
-            document.getElementById('quantity').value = record.kuantiti;
-            document.getElementById('unitType').value = record.unit || 'Papan';
-            document.getElementById('price').value = record.harga;
-            document.getElementById('purchaseNote').value = record.nota === '-' ? '' : record.nota;
-
-            const radio = document.querySelector(`input[name="claimStatus"][value="${record.status}"]`);
-            if (radio) radio.checked = true;
-
-            document.getElementById('editingRecordId').textContent = record.id;
-            document.getElementById('editingBanner').classList.remove('hidden');
-            document.getElementById('submitBtnText').textContent = 'Kemaskini Rekod';
-            document.getElementById('formTitleText').innerHTML = `<i data-lucide="edit" class="w-4 h-4 text-indigo-500"></i> Edit Rekod Telur`;
-
-            scrollToSection('sectionForm');
-            calculateUnitPreview();
-            lucide.createIcons();
-        }
-
-        function cancelEditing() {
-            document.getElementById('editHiddenId').value = '';
-            document.getElementById('editingBanner').classList.add('hidden');
-            document.getElementById('submitBtnText').textContent = 'Simpan Rekod Pembelian';
-            document.getElementById('formTitleText').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i> Key-In Pembelian Telur`;
-            
-            document.getElementById('quantity').value = '';
-            document.getElementById('price').value = '';
-            document.getElementById('purchaseNote').value = '';
-            document.getElementById('unitPriceHint').textContent = '';
-            lucide.createIcons();
-        }
-
-        function toggleClaimStatus(id) {
-            const idx = purchaseRecords.findIndex(r => r.id === id);
-            if (idx !== -1) {
-                const oldStatus = purchaseRecords[idx].status;
-                purchaseRecords[idx].status = oldStatus === 'Telah Claim' ? 'Belum Claim' : 'Telah Claim';
-                saveRecords();
-                renderDashboard();
-                showToast(`Status ditukar ke ${purchaseRecords[idx].status}`, 'info');
-                
-                const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-                if (webhookUrl) {
-                    syncWithGoogleAppsScript(purchaseRecords[idx], true);
-                }
-            }
-        }
-
-        function promptDeleteRecord(id) {
-            pendingDeleteId = id;
-            const modal = document.getElementById('deleteModal');
-            if (modal) modal.classList.remove('hidden');
-        }
-
-        function closeDeleteModal() {
-            pendingDeleteId = null;
-            const modal = document.getElementById('deleteModal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function confirmDeleteRecord() {
-            if (!pendingDeleteId) return;
-            purchaseRecords = purchaseRecords.filter(r => r.id !== pendingDeleteId);
-            saveRecords();
-            closeDeleteModal();
-            renderDashboard();
-            showToast('Rekod berjaya dipadam.', 'info');
-        }
-
-        function setStatusFilter(status) {
-            currentFilter = status;
-            const btnAll = document.getElementById('filterBtnAll');
-            const btnPaid = document.getElementById('filterBtnPaid');
-            const btnUnpaid = document.getElementById('filterBtnUnpaid');
-
-            [btnAll, btnPaid, btnUnpaid].forEach(b => {
-                b.className = 'flex-1 py-1 rounded-lg text-slate-500';
-            });
-
-            if (status === 'ALL') {
-                btnAll.className = 'flex-1 py-1 rounded-lg bg-white text-slate-800 shadow-xs font-bold';
-            } else if (status === 'Telah Claim') {
-                btnPaid.className = 'flex-1 py-1 rounded-lg bg-white text-emerald-700 shadow-xs font-bold';
-            } else {
-                btnUnpaid.className = 'flex-1 py-1 rounded-lg bg-white text-amber-700 shadow-xs font-bold';
-            }
-
-            renderTable();
-        }
-
-        function renderDashboard() {
-            let totalPaid = 0;
-            let totalUnpaid = 0;
-            let totalQty = 0;
-            let unpaidCount = 0;
-
-            purchaseRecords.forEach(r => {
-                const cost = Number(r.harga) || 0;
-                const qty = Number(r.kuantiti) || 0;
-                totalQty += qty;
-
-                if (r.status === 'Telah Claim') {
-                    totalPaid += cost;
-                } else {
-                    totalUnpaid += cost;
-                    unpaidCount++;
-                }
-            });
-
-            const totalSpent = totalPaid + totalUnpaid;
-            const netBalance = TOTAL_BUDGET - totalSpent;
-
-            // Kemaskini Baki Bajet
-            const balanceElem = document.getElementById('metricBalance');
-            balanceElem.textContent = `RM ${netBalance.toLocaleString('ms-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-            if (netBalance < 0) {
-                balanceElem.className = 'text-2xl font-black text-rose-400 tracking-tight';
-            } else {
-                balanceElem.className = 'text-2xl font-black text-white tracking-tight';
-            }
-
-            // Peratus Bajet Diguna
-            const percentUsed = Math.min(100, (totalSpent / TOTAL_BUDGET) * 100);
-            document.getElementById('budgetUsagePercent').textContent = `${percentUsed.toFixed(1)}% diguna`;
-
-            // Progress bar
-            const paidPct = Math.min(100, (totalPaid / TOTAL_BUDGET) * 100);
-            const unpaidPct = Math.min(100 - paidPct, (totalUnpaid / TOTAL_BUDGET) * 100);
-            document.getElementById('progressPaid').style.width = `${paidPct}%`;
-            document.getElementById('progressUnpaid').style.width = `${unpaidPct}%`;
-
-            document.getElementById('progressPaidLabel').textContent = `RM ${totalPaid.toFixed(2)}`;
-            document.getElementById('progressUnpaidLabel').textContent = `RM ${totalUnpaid.toFixed(2)}`;
-
-            // Metrik Ringkas
-            document.getElementById('metricTotalQuantity').textContent = totalQty;
-            const avgPrice = totalQty > 0 ? (totalSpent / totalQty).toFixed(2) : '0.00';
-            document.getElementById('metricAvgPrice').textContent = `Purata: RM ${avgPrice}/unit`;
-
-            document.getElementById('metricUnpaid').textContent = `RM ${totalUnpaid.toFixed(2)}`;
-            document.getElementById('metricUnpaidCount').textContent = `${unpaidCount} transaksi`;
-
-            // Amaran Bajet
-            const alertBanner = document.getElementById('budgetAlertBanner');
-            const alertText = document.getElementById('budgetAlertText');
-            if (netBalance < 0) {
-                alertBanner.classList.remove('hidden');
-                alertText.textContent = `Defisit! Bajet terlebih RM ${Math.abs(netBalance).toFixed(2)}.`;
-            } else if (netBalance <= 250) {
-                alertBanner.classList.remove('hidden');
-                alertText.textContent = `Amaran: Baki bajet tinggal RM ${netBalance.toFixed(2)} (bawah 15%).`;
-            } else {
-                alertBanner.classList.add('hidden');
-            }
-
-            updateChart(totalPaid, totalUnpaid);
-            renderTable();
-        }
-
-        function initChart() {
-            const ctx = document.getElementById('claimsPieChart');
-            if (!ctx) return;
-
-            claimsChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Telah Claim', 'Belum Claim'],
-                    datasets: [{
-                        data: [0, 0],
-                        backgroundColor: ['#10b981', '#f59e0b'],
-                        borderWidth: 2,
-                        borderColor: '#ffffff'
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    cutout: '72%',
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    return ` ${context.label}: RM ${Number(context.raw).toFixed(2)}`;
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function updateChart(paid, unpaid) {
-            const total = paid + unpaid;
-            document.getElementById('chartTotalAmount').textContent = `Total: RM ${total.toFixed(2)}`;
-            document.getElementById('legendPaidAmount').textContent = `RM ${paid.toFixed(2)}`;
-            document.getElementById('legendUnpaidAmount').textContent = `RM ${unpaid.toFixed(2)}`;
-
-            if (claimsChart) {
-                if (paid === 0 && unpaid === 0) {
-                    claimsChart.data.datasets[0].data = [1];
-                    claimsChart.data.datasets[0].backgroundColor = ['#e2e8f0'];
-                } else {
-                    claimsChart.data.datasets[0].data = [paid, unpaid];
-                    claimsChart.data.datasets[0].backgroundColor = ['#10b981', '#f59e0b'];
-                }
-                claimsChart.update();
-            }
-        }
-
-        function renderTable() {
-            const container = document.getElementById('purchaseMobileList');
-            const searchKeyword = (document.getElementById('tableSearchInput')?.value || '').toLowerCase().trim();
-
-            let filtered = purchaseRecords.filter(item => {
-                const matchFilter = (currentFilter === 'ALL') || (item.status === currentFilter);
-                const matchSearch = (!searchKeyword) || 
-                    (item.nota && item.nota.toLowerCase().includes(searchKeyword)) || 
-                    (item.tarikh && item.tarikh.includes(searchKeyword)) ||
-                    (item.id && item.id.toLowerCase().includes(searchKeyword));
-                return matchFilter && matchSearch;
-            });
-
-            document.getElementById('totalRowCount').textContent = `${filtered.length} rekod`;
-
-            if (filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="py-8 text-center text-slate-400 flex flex-col items-center justify-center gap-1.5">
-                        <i data-lucide="inbox" class="w-6 h-6 text-slate-300"></i>
-                        <span class="text-xs font-semibold">Tiada rekod pembelian</span>
-                    </div>
-                `;
-                lucide.createIcons();
-                return;
-            }
-
-            let html = '';
-            filtered.forEach((item) => {
-                const isPaid = item.status === 'Telah Claim';
-                const statusBadge = isPaid 
-                    ? `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Telah Claim</span>`
-                    : `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">Belum Claim</span>`;
-
-                html += `
-                    <div class="p-3 rounded-2xl border border-slate-200/80 bg-slate-50/50 hover:bg-white transition flex flex-col gap-1.5">
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold text-slate-800">${formatDateDisplay(item.tarikh)}</span>
-                            <span class="text-xs font-black text-slate-900">RM ${(Number(item.harga) || 0).toFixed(2)}</span>
-                        </div>
-                        <div class="flex items-center justify-between text-[11px] text-slate-500">
-                            <span>${item.kuantiti} ${item.unit || 'Papan'}</span>
-                            <div>${statusBadge}</div>
-                        </div>
-                        ${item.nota && item.nota !== '-' ? `<p class="text-[10px] text-slate-400 italic truncate">${escapeHTML(item.nota)}</p>` : ''}
-                        
-                        <!-- Aksi Cepat Kad -->
-                        <div class="flex items-center justify-end gap-1 pt-1 border-t border-slate-100 mt-0.5">
-                            <button onclick="startEditRecord('${item.id}')" title="Edit" class="p-1 text-slate-400 hover:text-indigo-600">
-                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="sendSingleToSheet('${item.id}')" title="Sync ke Sheet" class="p-1 text-slate-400 hover:text-emerald-600">
-                                <i data-lucide="send" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="toggleClaimStatus('${item.id}')" title="Tukar Status" class="p-1 text-slate-400 hover:text-amber-600">
-                                <i data-lucide="repeat" class="w-3.5 h-3.5"></i>
-                            </button>
-                            <button onclick="promptDeleteRecord('${item.id}')" title="Padam" class="p-1 text-slate-400 hover:text-rose-600">
-                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-
-            container.innerHTML = html;
-            lucide.createIcons();
-        }
-
-        // Integrasi Google Sheets Webhook
-        async function syncWithGoogleAppsScript(dataPayload, silent = false) {
-            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-            if (!webhookUrl) {
-                if (!silent) {
-                    openGoogleSheetModal();
-                    showToast('Sila masukkan Webhook URL Apps Script dahulu.', 'warning');
-                }
-                return false;
-            }
-
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 
-                        'Content-Type': 'text/plain;charset=utf-8' 
-                    },
-                    body: JSON.stringify(dataPayload)
-                });
-                
-                if (!silent) {
-                    showToast('Rekod berjaya dihantar ke Google Sheet!', 'success');
-                }
-                return true;
-            } catch (err) {
-                console.error("Gagal sync ke Apps Script:", err);
-                if (!silent) {
-                    showToast('Gagal berhubung ke Google Sheet. Semak Webhook URL.', 'error');
-                }
-                return false;
-            }
-        }
-
-        function sendSingleToSheet(id) {
-            const item = purchaseRecords.find(r => r.id === id);
-            if (!item) return;
-            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-            if (!webhookUrl) {
-                openGoogleSheetModal();
-                showToast('Masukkan Webhook Apps Script terlebih dahulu.', 'warning');
-                return;
-            }
-            syncWithGoogleAppsScript(item);
-        }
-
-        async function syncAllToGoogleSheet() {
-            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-            if (!webhookUrl) {
-                openGoogleSheetModal();
-                showToast('Masukkan Webhook URL Apps Script dahulu.', 'warning');
-                return;
-            }
-            if (purchaseRecords.length === 0) {
-                showToast('Tiada rekod untuk disegerakkan.', 'info');
-                return;
-            }
-
-            const btn = document.getElementById('syncAllBtn');
-            btn.classList.add('animate-spin');
-            showToast('Menghantar semua rekod ke Sheet...', 'info');
-
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(purchaseRecords)
-                });
-                showToast('Semua rekod berjaya dihantar ke Google Sheet!', 'success');
-            } catch (e) {
-                showToast('Gagal berhubung dengan Google Sheet.', 'error');
-            } finally {
-                btn.classList.remove('animate-spin');
-            }
-        }
-
-        async function fetchFromGoogleSheet() {
-            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
-            if (!webhookUrl) {
-                openGoogleSheetModal();
-                showToast('Sila masukkan Webhook URL Apps Script dahulu.', 'warning');
-                return;
-            }
-
-            const btn = document.getElementById('fetchSheetBtn');
-            btn.classList.add('animate-spin');
-            showToast('Menarik data dari Google Sheet...', 'info');
-
-            try {
-                const targetUrl = webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'action=read';
-                const response = await fetch(targetUrl);
-                const text = await response.text();
-
-                let resData;
-                try {
-                    resData = JSON.parse(text);
-                } catch (e) {
-                    showToast('Apps Script belum dikemas kini dengan versi terkini (New Deployment).', 'warning');
-                    return;
-                }
-
-                if (resData.status === 'success' && Array.isArray(resData.data)) {
-                    if (resData.data.length === 0) {
-                        showToast('Sheet kosong atau tiada rekod ditemui.', 'info');
-                    } else {
-                        purchaseRecords = resData.data;
-                        saveRecords();
-                        renderDashboard();
-                        showToast(`Berjaya menarik ${resData.data.length} rekod dari Sheet!`, 'success');
-                    }
-                } else {
-                    showToast(resData.message || 'Gagal membaca data dari Sheet.', 'warning');
-                }
-            } catch (err) {
-                showToast('Ralat capaian: Pastikan Web App diset kepada "Anyone".', 'error');
-            } finally {
-                btn.classList.remove('animate-spin');
-            }
-        }
-
-        async function testWebhookConnection() {
-            const webhookInput = document.getElementById('gsheetWebhookInput').value.trim();
-            if (!webhookInput) {
-                showToast('Sila masukkan Webhook URL dahulu.', 'warning');
-                return;
-            }
-
-            showToast('Menguji webhook...', 'info');
-            try {
-                await fetch(webhookInput, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify({ action: 'test', timestamp: new Date().toISOString() })
-                });
-                showToast('Sambungan aktif dan bersedia!', 'success');
-            } catch (e) {
-                showToast('Sambungan gagal dihubungi.', 'error');
-            }
-        }
-
-        // Bantuan Format & UI
-        function formatDateDisplay(dateStr) {
-            if (!dateStr) return '-';
-            const parts = dateStr.split('-');
-            if (parts.length === 3) {
-                return `${parts[2]}/${parts[1]}/${parts[0]}`;
-            }
-            return dateStr;
-        }
-
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag));
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-
-            const toast = document.createElement('div');
-            let color = 'bg-slate-900 text-white';
-            if (type === 'success') color = 'bg-emerald-600 text-white';
-            if (type === 'warning') color = 'bg-amber-600 text-white';
-            if (type === 'error') color = 'bg-rose-600 text-white';
-
-            toast.className = `${color} px-3.5 py-2 rounded-2xl shadow-lg text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-[-10px] opacity-0 pointer-events-auto`;
-            toast.innerHTML = `<span>${message}</span>`;
-            
-            container.appendChild(toast);
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-y-[-10px]', 'opacity-0');
-            });
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-[-10px]');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    </script>
+      } catch (e) {}
+      return dateStr;
+    }
+
+    // Helper: Escape HTML string
+    function escapeHtml(string) {
+      if (!string) return '';
+      return String(string)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Export Table Data to CSV
+    function exportToCSV() {
+      if (purchases.length === 0) {
+        showToast('error', 'Tiada Data', 'Tiada rekod untuk dieksport.');
+        return;
+      }
+
+      const headers = ['Bil', 'Tarikh Pembelian', 'Kuantiti (Papan)', 'Harga (RM)', 'Harga Se-Papan (RM)', 'Status', 'Catatan', 'Diselaraskan Ke Sheet'];
+      const rows = purchases.map((p, idx) => [
+        idx + 1,
+        `"${p.date}"`,
+        p.quantity,
+        p.price.toFixed(2),
+        (p.quantity > 0 ? (p.price / p.quantity).toFixed(2) : 0),
+        `"${p.status}"`,
+        `"${(p.notes || '').replace(/"/g, '""')}"`,
+        p.synced ? 'Ya' : 'Belum'
+      ]);
+
+      let csvContent = 'data:text/csv;charset=utf-8,\uFEFF' 
+        + headers.join(',') + '\n'
+        + rows.map(e => e.join(',')).join('\n');
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `Laporan_Pembelian_Telur_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast('success', 'Eksport Berjaya', 'Fail CSV laporan pembelian telur telah dimuat turun.');
+    }
+
+    // Window Init
+    window.onload = function() {
+      // Set today's date in datepicker by default
+      const today = new Date().toISOString().split('T')[0];
+      const dateInput = document.getElementById('purchaseDate');
+      if (dateInput) {
+        dateInput.value = today;
+      }
+
+      loadInitialData();
+      initChart();
+      updateKPIs();
+      renderTable();
+    };
+  </script>
 </body>
 </html>
