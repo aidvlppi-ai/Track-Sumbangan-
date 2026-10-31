@@ -1,4 +1,5 @@
-<!-- ... existing code ... -->
+<!DOCTYPE html>
+<html lang="ms">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -23,14 +24,12 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', 'SF Pro Display', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        /* Penyesuaian Safe Area iOS iPhone */
         .safe-top {
             padding-top: max(env(safe-area-inset-top), 12px);
         }
         .safe-bottom {
             padding-bottom: max(env(safe-area-inset-bottom), 16px);
         }
-        /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 4px;
             height: 4px;
@@ -39,7 +38,6 @@
             background: #cbd5e1;
             border-radius: 9999px;
         }
-        /* Gaya Rangka Peranti iPhone 17 Pro pada Skrin Lebar */
         @media (min-width: 640px) {
             .iphone-frame {
                 max-width: 402px;
@@ -61,7 +59,7 @@
     <!-- Container Utama: Bersaiz Tepat iPhone 17 Pro (402px lebar logikal) -->
     <div id="iphoneContainer" class="iphone-frame bg-slate-50 w-full flex flex-col min-h-screen sm:min-h-[874px] relative overflow-hidden transition-all duration-300">
         
-        <!-- Bar Status Atas & Dynamic Island Simulasi (Khas iPhone) -->
+        <!-- Bar Status Atas & Dynamic Island Simulasi -->
         <div class="hidden dynamic-island-pill w-full pt-3 pb-2 px-7 bg-white justify-between items-center text-xs font-semibold text-slate-800 select-none z-40 border-b border-slate-100">
             <span class="text-[13px] font-bold tracking-tight">9:41</span>
             <!-- Dynamic Island Shape -->
@@ -109,7 +107,7 @@
         <!-- Kandungan Utama (Skrol Menegak Lancar) -->
         <main class="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-28">
             
-            <!-- Status Amaran Had Bajet (Auto-Muncul) -->
+            <!-- Status Amaran Had Bajet -->
             <div id="budgetAlertBanner" class="hidden rounded-2xl bg-rose-50 border border-rose-200 p-3 flex items-center justify-between gap-2.5">
                 <div class="flex items-center gap-2">
                     <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 shrink-0"></i>
@@ -120,7 +118,7 @@
                 </button>
             </div>
 
-            <!-- Kad Baki Bajet Utama (Hero Widget) -->
+            <!-- Kad Baki Bajet Utama -->
             <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-4 text-white shadow-lg relative overflow-hidden">
                 <div class="flex items-center justify-between text-slate-300 text-xs font-medium">
                     <span>Baki Bajet Bersih</span>
@@ -151,7 +149,7 @@
                 </div>
             </div>
 
-            <!-- 2 Kad Metrik Pantas (Grid Berkembar) -->
+            <!-- Kad Metrik Pantas -->
             <div class="grid grid-cols-2 gap-3">
                 <div class="bg-white p-3.5 rounded-2xl border border-slate-200/70 shadow-xs">
                     <div class="flex items-center justify-between text-[11px] font-bold text-slate-400 uppercase">
@@ -172,10 +170,10 @@
                 </div>
             </div>
 
-            <!-- Tab 1: Borang Key-In (Dikemaskan untuk Skrin Sentuh) -->
+            <!-- Tab Borang Key-In -->
             <section id="sectionForm" class="bg-white rounded-3xl p-4 sm:p-5 border border-slate-200/80 shadow-xs space-y-3.5">
                 
-                <!-- Notis Mod Suntingan (Bila edit) -->
+                <!-- Notis Mod Suntingan -->
                 <div id="editingBanner" class="hidden p-2.5 bg-indigo-50 border border-indigo-200 rounded-xl flex items-center justify-between text-xs text-indigo-800">
                     <span class="font-semibold flex items-center gap-1.5 truncate">
                         <i data-lucide="pencil" class="w-3.5 h-3.5 text-indigo-600"></i>
@@ -265,7 +263,7 @@
                         </div>
                     </div>
 
-                    <!-- Status Tuntutan (Pilihan iOS Segmented Control) -->
+                    <!-- Status Tuntutan -->
                     <div>
                         <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1.5">
                             Status Tuntutan
@@ -343,7 +341,7 @@
                 </div>
             </section>
 
-            <!-- Laporan Senarai Transaksi (Mobile Cards) -->
+            <!-- Laporan Senarai Transaksi -->
             <section id="sectionList" class="bg-white rounded-3xl p-4 border border-slate-200/80 shadow-xs space-y-3">
                 <div class="flex items-center justify-between">
                     <h3 class="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
@@ -367,14 +365,14 @@
                         type="text" 
                         id="tableSearchInput" 
                         placeholder="Cari resit / tarikh..." 
-                        oninput="filterRecords()"
+                        oninput="renderTable()"
                         class="w-full pl-8 pr-3 py-1.5 text-xs rounded-xl border border-slate-200 bg-slate-50 focus:bg-white focus:ring-1 focus:ring-amber-400 outline-none"
                     >
                 </div>
 
                 <!-- Senarai Kad Transaksi iPhone -->
                 <div id="purchaseMobileList" class="space-y-2.5 pt-1">
-                    <!-- Kad dijana secara automatik oleh JS -->
+                    <!-- Dijana secara automatik oleh JS -->
                 </div>
             </section>
         </main>
@@ -421,7 +419,7 @@
                     <input 
                         type="url" 
                         id="gsheetWebhookInput" 
-                        placeholder="https://script.google.com/macros/s/.../exec"
+                        placeholder="https://script.google.com/macros/s/AKfycbzLxH3UE0rFQ3cjT2gw69BmhdjwYvSsFgpZRNmqpNntYSoQhetcPXclCxnpkKGlsAQg/exec"
                         class="w-full px-3 py-2 rounded-xl border border-emerald-300 text-[11px] text-slate-800 focus:ring-1 focus:ring-emerald-500 outline-none bg-emerald-50/30 font-mono"
                     >
                 </div>
@@ -463,7 +461,7 @@
             <p class="text-[11px] text-slate-500 mt-0.5" id="deleteModalDesc">Tindakan ini tidak boleh diundur.</p>
             <div class="mt-4 flex items-center justify-center gap-2">
                 <button onclick="closeDeleteModal()" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-slate-100 text-slate-700">Batal</button>
-                <button id="confirmDeleteBtn" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-rose-600 text-white">Padam</button>
+                <button id="confirmDeleteBtn" onclick="confirmDeleteRecord()" class="flex-1 px-3 py-2 text-xs font-semibold rounded-xl bg-rose-600 text-white">Padam</button>
             </div>
         </div>
     </div>
@@ -471,7 +469,7 @@
     <!-- Container Toast Notifikasi iOS Banner -->
     <div id="toastContainer" class="fixed top-4 inset-x-0 mx-auto z-50 flex flex-col items-center gap-1.5 max-w-[340px] pointer-events-none"></div>
 
-    <!-- Skrip Pengendalian -->
+    <!-- Skrip Pengendalian Penuh -->
     <script>
         const TOTAL_BUDGET = 1650.00;
         let purchaseRecords = [];
@@ -481,7 +479,8 @@
 
         window.onload = function() {
             const today = new Date().toISOString().split('T')[0];
-            document.getElementById('purchaseDate').value = today;
+            const dateInput = document.getElementById('purchaseDate');
+            if (dateInput) dateInput.value = today;
 
             loadSavedSettings();
             loadRecords();
@@ -491,7 +490,8 @@
         };
 
         function scrollToTop() {
-            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+            const main = document.querySelector('main');
+            if (main) main.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         function scrollToSection(id) {
@@ -499,16 +499,342 @@
             if (el) el.scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ... existing code ...
-        // (Semua fungsi asal: loadRecords, saveRecords, loadSavedSettings, saveSheetSettings,
-        // handleFormSubmit, startEditRecord, cancelEditing, calculateUnitPreview, toggleClaimStatus,
-        // promptDeleteRecord, closeDeleteModal, deleteRecord, fetchFromGoogleSheet, syncWithGoogleAppsScript,
-        // sendSingleToSheet, syncAllToGoogleSheet, testWebhookConnection, openTargetSheet, exportToCSV kekal)
+        function loadRecords() {
+            try {
+                const stored = localStorage.getItem('egg_purchase_records_v2');
+                if (stored) {
+                    purchaseRecords = JSON.parse(stored);
+                } else {
+                    purchaseRecords = [
+                        { id: 'EGG-1001', tarikh: '2026-10-25', kuantiti: 10, unit: 'Papan', harga: 145.00, status: 'Telah Claim', nota: 'Pembekal Ladang A' },
+                        { id: 'EGG-1002', tarikh: '2026-10-28', kuantiti: 12, unit: 'Papan', harga: 174.00, status: 'Belum Claim', nota: 'Resit No. 4410' },
+                        { id: 'EGG-1003', tarikh: '2026-10-30', kuantiti: 8, unit: 'Papan', harga: 116.00, status: 'Telah Claim', nota: 'Telur Gred A' }
+                    ];
+                    saveRecords();
+                }
+            } catch (e) {
+                purchaseRecords = [];
+            }
+        }
 
-        // Penyesuaian Paparan Kad Transaksi Khas untuk iPhone 17 Pro
+        function saveRecords() {
+            localStorage.setItem('egg_purchase_records_v2', JSON.stringify(purchaseRecords));
+        }
+
+        function loadSavedSettings() {
+            const savedWebhook = localStorage.getItem('egg_tracker_webhook_url') || '';
+            const savedSheet = localStorage.getItem('egg_tracker_sheet_url') || '';
+            const webhookInput = document.getElementById('gsheetWebhookInput');
+            const sheetInput = document.getElementById('gsheetUrlInput');
+            if (webhookInput) webhookInput.value = savedWebhook;
+            if (sheetInput) sheetInput.value = savedSheet;
+        }
+
+        function saveSheetSettings() {
+            const webhookVal = document.getElementById('gsheetWebhookInput').value.trim();
+            const sheetVal = document.getElementById('gsheetUrlInput').value.trim();
+            localStorage.setItem('egg_tracker_webhook_url', webhookVal);
+            localStorage.setItem('egg_tracker_sheet_url', sheetVal);
+            showToast('Tetapan Google Sheet disimpan!', 'success');
+            closeGoogleSheetModal();
+        }
+
+        function openGoogleSheetModal() {
+            const modal = document.getElementById('googleSheetModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeGoogleSheetModal() {
+            const modal = document.getElementById('googleSheetModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function openTargetSheet() {
+            const sheetUrl = localStorage.getItem('egg_tracker_sheet_url');
+            if (sheetUrl && sheetUrl.startsWith('http')) {
+                window.open(sheetUrl, '_blank');
+            } else {
+                showToast('Sila masukkan Pautan Google Sheet terlebih dahulu.', 'warning');
+            }
+        }
+
+        function calculateUnitPreview() {
+            const qty = parseFloat(document.getElementById('quantity').value) || 0;
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const unit = document.getElementById('unitType').value;
+            const hint = document.getElementById('unitPriceHint');
+
+            if (qty > 0 && price > 0) {
+                const perUnit = (price / qty).toFixed(2);
+                hint.textContent = `~RM ${perUnit} / ${unit}`;
+            } else {
+                hint.textContent = '';
+            }
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const editId = document.getElementById('editHiddenId').value;
+            const date = document.getElementById('purchaseDate').value;
+            const quantity = parseInt(document.getElementById('quantity').value, 10);
+            const unit = document.getElementById('unitType').value;
+            const price = parseFloat(document.getElementById('price').value);
+            const status = document.querySelector('input[name="claimStatus"]:checked').value;
+            const note = document.getElementById('purchaseNote').value.trim() || '-';
+
+            if (editId) {
+                const idx = purchaseRecords.findIndex(r => r.id === editId);
+                if (idx !== -1) {
+                    purchaseRecords[idx] = {
+                        ...purchaseRecords[idx],
+                        tarikh: date,
+                        kuantiti: quantity,
+                        unit: unit,
+                        harga: price,
+                        status: status,
+                        nota: note
+                    };
+                    showToast('Rekod berjaya dikemaskini!', 'success');
+                }
+                cancelEditing();
+            } else {
+                const newRecord = {
+                    id: 'REC-' + Date.now().toString().slice(-6),
+                    tarikh: date,
+                    kuantiti: quantity,
+                    unit: unit,
+                    harga: price,
+                    status: status,
+                    nota: note
+                };
+                purchaseRecords.unshift(newRecord);
+                showToast('Rekod baharu ditambah!', 'success');
+                syncWithGoogleAppsScript(newRecord);
+            }
+
+            saveRecords();
+            renderDashboard();
+
+            // Reset borang
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('purchaseNote').value = '';
+            document.getElementById('unitPriceHint').textContent = '';
+        }
+
+        function startEditRecord(id) {
+            const record = purchaseRecords.find(r => r.id === id);
+            if (!record) return;
+
+            document.getElementById('editHiddenId').value = record.id;
+            document.getElementById('purchaseDate').value = record.tarikh;
+            document.getElementById('quantity').value = record.kuantiti;
+            document.getElementById('unitType').value = record.unit || 'Papan';
+            document.getElementById('price').value = record.harga;
+            document.getElementById('purchaseNote').value = record.nota === '-' ? '' : record.nota;
+
+            const radio = document.querySelector(`input[name="claimStatus"][value="${record.status}"]`);
+            if (radio) radio.checked = true;
+
+            document.getElementById('editingRecordId').textContent = record.id;
+            document.getElementById('editingBanner').classList.remove('hidden');
+            document.getElementById('submitBtnText').textContent = 'Kemaskini Rekod';
+            document.getElementById('formTitleText').innerHTML = `<i data-lucide="edit" class="w-4 h-4 text-indigo-500"></i> Edit Rekod Telur`;
+
+            scrollToSection('sectionForm');
+            calculateUnitPreview();
+            lucide.createIcons();
+        }
+
+        function cancelEditing() {
+            document.getElementById('editHiddenId').value = '';
+            document.getElementById('editingBanner').classList.add('hidden');
+            document.getElementById('submitBtnText').textContent = 'Simpan Rekod Pembelian';
+            document.getElementById('formTitleText').innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 text-amber-500"></i> Key-In Pembelian Telur`;
+            
+            document.getElementById('quantity').value = '';
+            document.getElementById('price').value = '';
+            document.getElementById('purchaseNote').value = '';
+            document.getElementById('unitPriceHint').textContent = '';
+            lucide.createIcons();
+        }
+
+        function toggleClaimStatus(id) {
+            const idx = purchaseRecords.findIndex(r => r.id === id);
+            if (idx !== -1) {
+                const oldStatus = purchaseRecords[idx].status;
+                purchaseRecords[idx].status = oldStatus === 'Telah Claim' ? 'Belum Claim' : 'Telah Claim';
+                saveRecords();
+                renderDashboard();
+                showToast(`Status ditukar ke ${purchaseRecords[idx].status}`, 'info');
+            }
+        }
+
+        function promptDeleteRecord(id) {
+            pendingDeleteId = id;
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            pendingDeleteId = null;
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function confirmDeleteRecord() {
+            if (!pendingDeleteId) return;
+            purchaseRecords = purchaseRecords.filter(r => r.id !== pendingDeleteId);
+            saveRecords();
+            closeDeleteModal();
+            renderDashboard();
+            showToast('Rekod berjaya dipadam.', 'info');
+        }
+
+        function setStatusFilter(status) {
+            currentFilter = status;
+            const btnAll = document.getElementById('filterBtnAll');
+            const btnPaid = document.getElementById('filterBtnPaid');
+            const btnUnpaid = document.getElementById('filterBtnUnpaid');
+
+            [btnAll, btnPaid, btnUnpaid].forEach(b => {
+                b.className = 'flex-1 py-1 rounded-lg text-slate-500';
+            });
+
+            if (status === 'ALL') {
+                btnAll.className = 'flex-1 py-1 rounded-lg bg-white text-slate-800 shadow-xs font-bold';
+            } else if (status === 'Telah Claim') {
+                btnPaid.className = 'flex-1 py-1 rounded-lg bg-white text-emerald-700 shadow-xs font-bold';
+            } else {
+                btnUnpaid.className = 'flex-1 py-1 rounded-lg bg-white text-amber-700 shadow-xs font-bold';
+            }
+
+            renderTable();
+        }
+
+        function renderDashboard() {
+            let totalPaid = 0;
+            let totalUnpaid = 0;
+            let totalQty = 0;
+            let unpaidCount = 0;
+
+            purchaseRecords.forEach(r => {
+                const cost = Number(r.harga) || 0;
+                const qty = Number(r.kuantiti) || 0;
+                totalQty += qty;
+
+                if (r.status === 'Telah Claim') {
+                    totalPaid += cost;
+                } else {
+                    totalUnpaid += cost;
+                    unpaidCount++;
+                }
+            });
+
+            const totalSpent = totalPaid + totalUnpaid;
+            const netBalance = TOTAL_BUDGET - totalSpent;
+
+            // Kemaskini Baki Bajet
+            const balanceElem = document.getElementById('metricBalance');
+            balanceElem.textContent = `RM ${netBalance.toLocaleString('ms-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            if (netBalance < 0) {
+                balanceElem.className = 'text-2xl font-black text-rose-400 tracking-tight';
+            } else {
+                balanceElem.className = 'text-2xl font-black text-white tracking-tight';
+            }
+
+            // Peratus Bajet Diguna
+            const percentUsed = Math.min(100, (totalSpent / TOTAL_BUDGET) * 100);
+            document.getElementById('budgetUsagePercent').textContent = `${percentUsed.toFixed(1)}% diguna`;
+
+            // Progress bar
+            const paidPct = Math.min(100, (totalPaid / TOTAL_BUDGET) * 100);
+            const unpaidPct = Math.min(100 - paidPct, (totalUnpaid / TOTAL_BUDGET) * 100);
+            document.getElementById('progressPaid').style.width = `${paidPct}%`;
+            document.getElementById('progressUnpaid').style.width = `${unpaidPct}%`;
+
+            document.getElementById('progressPaidLabel').textContent = `RM ${totalPaid.toFixed(2)}`;
+            document.getElementById('progressUnpaidLabel').textContent = `RM ${totalUnpaid.toFixed(2)}`;
+
+            // Metrik Ringkas
+            document.getElementById('metricTotalQuantity').textContent = totalQty;
+            const avgPrice = totalQty > 0 ? (totalSpent / totalQty).toFixed(2) : '0.00';
+            document.getElementById('metricAvgPrice').textContent = `Purata: RM ${avgPrice}/unit`;
+
+            document.getElementById('metricUnpaid').textContent = `RM ${totalUnpaid.toFixed(2)}`;
+            document.getElementById('metricUnpaidCount').textContent = `${unpaidCount} transaksi`;
+
+            // Amaran Bajet
+            const alertBanner = document.getElementById('budgetAlertBanner');
+            const alertText = document.getElementById('budgetAlertText');
+            if (netBalance < 0) {
+                alertBanner.classList.remove('hidden');
+                alertText.textContent = `Defisit! Bajet terlebih RM ${Math.abs(netBalance).toFixed(2)}.`;
+            } else if (netBalance <= 250) {
+                alertBanner.classList.remove('hidden');
+                alertText.textContent = `Amaran: Baki bajet tinggal RM ${netBalance.toFixed(2)} (bawah 15%).`;
+            } else {
+                alertBanner.classList.add('hidden');
+            }
+
+            updateChart(totalPaid, totalUnpaid);
+            renderTable();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('claimsPieChart');
+            if (!ctx) return;
+
+            claimsChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Telah Claim', 'Belum Claim'],
+                    datasets: [{
+                        data: [0, 0],
+                        backgroundColor: ['#10b981', '#f59e0b'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: RM ${Number(context.raw).toFixed(2)}`;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateChart(paid, unpaid) {
+            const total = paid + unpaid;
+            document.getElementById('chartTotalAmount').textContent = `Total: RM ${total.toFixed(2)}`;
+            document.getElementById('legendPaidAmount').textContent = `RM ${paid.toFixed(2)}`;
+            document.getElementById('legendUnpaidAmount').textContent = `RM ${unpaid.toFixed(2)}`;
+
+            if (claimsChart) {
+                if (paid === 0 && unpaid === 0) {
+                    claimsChart.data.datasets[0].data = [1];
+                    claimsChart.data.datasets[0].backgroundColor = ['#e2e8f0'];
+                } else {
+                    claimsChart.data.datasets[0].data = [paid, unpaid];
+                    claimsChart.data.datasets[0].backgroundColor = ['#10b981', '#f59e0b'];
+                }
+                claimsChart.update();
+            }
+        }
+
         function renderTable() {
             const container = document.getElementById('purchaseMobileList');
-            const searchKeyword = document.getElementById('tableSearchInput').value.toLowerCase().trim();
+            const searchKeyword = (document.getElementById('tableSearchInput')?.value || '').toLowerCase().trim();
 
             let filtered = purchaseRecords.filter(item => {
                 const matchFilter = (currentFilter === 'ALL') || (item.status === currentFilter);
@@ -574,5 +900,176 @@
             lucide.createIcons();
         }
 
-        // ... existing code ...
-        // (Fungsi renderDashboard, updateChart, initChart, setStatusFilter, dsb. kekal sama)
+        // Integrasi Google Sheets Webhook
+        async function syncWithGoogleAppsScript(dataPayload, silent = false) {
+            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
+            if (!webhookUrl) return;
+
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataPayload)
+                });
+                if (!silent) showToast('Data disegerakkan ke Google Sheet!', 'success');
+            } catch (err) {
+                if (!silent) showToast('Ralat sambungan Webhook Sheet', 'warning');
+            }
+        }
+
+        function sendSingleToSheet(id) {
+            const item = purchaseRecords.find(r => r.id === id);
+            if (!item) return;
+            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
+            if (!webhookUrl) {
+                openGoogleSheetModal();
+                showToast('Masukkan Webhook Apps Script terlebih dahulu.', 'warning');
+                return;
+            }
+            syncWithGoogleAppsScript(item);
+        }
+
+        async function syncAllToGoogleSheet() {
+            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
+            if (!webhookUrl) {
+                openGoogleSheetModal();
+                showToast('Masukkan Webhook URL Apps Script dahulu.', 'warning');
+                return;
+            }
+            if (purchaseRecords.length === 0) {
+                showToast('Tiada rekod untuk disegerakkan.', 'info');
+                return;
+            }
+
+            const btn = document.getElementById('syncAllBtn');
+            btn.classList.add('animate-spin');
+            showToast('Menghantar semua rekod ke Sheet...', 'info');
+
+            try {
+                await fetch(webhookUrl, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(purchaseRecords)
+                });
+                showToast('Semua rekod berjaya dihantar ke Google Sheet!', 'success');
+            } catch (e) {
+                showToast('Gagal berhubung dengan Google Sheet.', 'error');
+            } finally {
+                btn.classList.remove('animate-spin');
+            }
+        }
+
+        async function fetchFromGoogleSheet() {
+            const webhookUrl = localStorage.getItem('egg_tracker_webhook_url');
+            if (!webhookUrl) {
+                openGoogleSheetModal();
+                showToast('Sila masukkan Webhook URL Apps Script dahulu.', 'warning');
+                return;
+            }
+
+            const btn = document.getElementById('fetchSheetBtn');
+            btn.classList.add('animate-spin');
+            showToast('Menarik data dari Google Sheet...', 'info');
+
+            try {
+                const targetUrl = webhookUrl + (webhookUrl.includes('?') ? '&' : '?') + 'action=read';
+                const response = await fetch(targetUrl);
+                const text = await response.text();
+
+                let resData;
+                try {
+                    resData = JSON.parse(text);
+                } catch (e) {
+                    showToast('Apps Script belum dikemas kini dengan versi terkini (New Deployment).', 'warning');
+                    return;
+                }
+
+                if (resData.status === 'success' && Array.isArray(resData.data)) {
+                    if (resData.data.length === 0) {
+                        showToast('Sheet kosong atau tiada rekod ditemui.', 'info');
+                    } else {
+                        purchaseRecords = resData.data;
+                        saveRecords();
+                        renderDashboard();
+                        showToast(`Berjaya menarik ${resData.data.length} rekod dari Sheet!`, 'success');
+                    }
+                } else {
+                    showToast(resData.message || 'Gagal membaca data dari Sheet.', 'warning');
+                }
+            } catch (err) {
+                showToast('Ralat capaian: Pastikan Web App diset kepada "Anyone".', 'error');
+            } finally {
+                btn.classList.remove('animate-spin');
+            }
+        }
+
+        async function testWebhookConnection() {
+            const webhookInput = document.getElementById('gsheetWebhookInput').value.trim();
+            if (!webhookInput) {
+                showToast('Sila masukkan Webhook URL dahulu.', 'warning');
+                return;
+            }
+
+            showToast('Menguji webhook...', 'info');
+            try {
+                await fetch(webhookInput, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'test', timestamp: new Date().toISOString() })
+                });
+                showToast('Sambungan aktif dan bersedia!', 'success');
+            } catch (e) {
+                showToast('Sambungan gagal dihubungi.', 'error');
+            }
+        }
+
+        // Bantuan Format & UI
+        function formatDateDisplay(dateStr) {
+            if (!dateStr) return '-';
+            const parts = dateStr.split('-');
+            if (parts.length === 3) {
+                return `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+            return dateStr;
+        }
+
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag));
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let color = 'bg-slate-900 text-white';
+            if (type === 'success') color = 'bg-emerald-600 text-white';
+            if (type === 'warning') color = 'bg-amber-600 text-white';
+            if (type === 'error') color = 'bg-rose-600 text-white';
+
+            toast.className = `${color} px-3.5 py-2 rounded-2xl shadow-lg text-xs font-semibold flex items-center gap-2 transform transition-all duration-300 translate-y-[-10px] opacity-0 pointer-events-auto`;
+            toast.innerHTML = `<span>${message}</span>`;
+            
+            container.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-[-10px]', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-[-10px]');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
