@@ -82,6 +82,10 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <button id="pullFromSheetBtn" onclick="fetchDataFromGoogleSheet(true)" class="flex items-center gap-2 text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white px-3.5 py-2 rounded-xl transition-all border border-white/20 shadow-sm active:scale-95" title="Tarik data terkini dari Google Sheet">
+          <i id="pullBtnIcon" class="fa-solid fa-arrows-rotate"></i>
+          <span class="font-medium hidden sm:inline">Segar Semula Sheet</span>
+        </button>
         <button id="refreshSyncBtn" onclick="sendAllUnsynced()" class="flex items-center gap-2 text-xs sm:text-sm bg-maroon-950 hover:bg-black/40 text-amber-300 px-3.5 py-2 rounded-xl transition-all border border-amber-400/40 shadow-sm active:scale-95">
           <i class="fa-solid fa-cloud-arrow-up"></i>
           <span class="font-medium">Hantar Semua ke Google Sheet</span>
@@ -353,8 +357,8 @@
         <!-- Google Sheet webhook badge status -->
         <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
           <span class="flex items-center gap-1.5">
-            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-            Webhook Sheet Aktif
+            <span id="syncPulseDot" class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span id="syncStatusText">Auto-Sync Aktif</span>
           </span>
           <span class="text-slate-400 truncate max-w-[180px]" title="Google Script Exec Endpoint">script.google.com/...</span>
         </div>
@@ -496,15 +500,14 @@
       <div class="w-full rounded-2xl border border-slate-200 overflow-hidden">
         <table class="w-full table-fixed border-collapse text-[11px] sm:text-xs">
           <colgroup>
-            <col style="width: 5%;">   <!-- Bil -->
-            <col style="width: 14%;">  <!-- Tarikh -->
-            <col style="width: 11%;">  <!-- Kuantiti -->
-            <col style="width: 13%;">  <!-- Harga -->
-            <col style="width: 11%;">  <!-- RM/Papan -->
-            <col style="width: 17%;">  <!-- Status -->
+            <col style="width: 6%;">   <!-- Bil -->
+            <col style="width: 15%;">  <!-- Tarikh -->
+            <col style="width: 12%;">  <!-- Kuantiti -->
+            <col style="width: 14%;">  <!-- Harga -->
+            <col style="width: 12%;">  <!-- RM/Papan -->
+            <col style="width: 18%;">  <!-- Status -->
             <col style="width: 15%;">  <!-- Catatan -->
-            <col style="width: 7%;">   <!-- Sheet -->
-            <col style="width: 7%;">   <!-- Tindakan -->
+            <col style="width: 8%;">   <!-- Tindakan -->
           </colgroup>
           <thead>
             <tr class="bg-gradient-to-r from-maroon-900 to-maroon-800 text-white font-semibold">
@@ -515,7 +518,6 @@
               <th class="py-2.5 px-1 text-center">RM/Papan</th>
               <th class="py-2.5 px-2 text-center">Status</th>
               <th class="py-2.5 px-2 text-left">Catatan</th>
-              <th class="py-2.5 px-1 text-center" title="Status Hantar Google Sheet">Sheet</th>
               <th class="py-2.5 px-1 text-center">Aksi</th>
             </tr>
           </thead>
@@ -695,6 +697,94 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(purchases));
       } catch (e) {
         console.warn('LocalStorage save error:', e);
+      }
+    }
+
+    // Tarik data terkini dari Google Sheet secara automatik (Auto-Refresh dengan CORS & JSONP Fallback)
+    async function fetchDataFromGoogleSheet(showNotification = false) {
+      const pullBtnIcon = document.getElementById('pullBtnIcon');
+      const syncStatusText = document.getElementById('syncStatusText');
+      if (pullBtnIcon) pullBtnIcon.classList.add('fa-spin');
+      if (syncStatusText) syncStatusText.textContent = 'Menyegerak dari Sheet...';
+
+      // Callback pemprosesan data
+      const processRecords = (records) => {
+        if (!Array.isArray(records)) return false;
+        const sheetRecords = records.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+        purchases = sheetRecords;
+        saveToLocalStorage();
+        updateKPIs();
+        updateChart();
+        renderTable();
+
+        if (syncStatusText) syncStatusText.textContent = `Terselaras (${sheetRecords.length} rekod)`;
+        if (showNotification) {
+          showToast('success', 'Data Diperbaharui', `${sheetRecords.length} rekod belian berjaya ditarik dari Google Sheet.`);
+        }
+        return true;
+      };
+
+      // Kaedah 1: Cuba guna standard fetch API
+      try {
+        const response = await fetch(`${WEBHOOK_URL}?t=${Date.now()}`, {
+          method: 'GET',
+          headers: { 'Accept': 'application/json' }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          if (result && result.status === 'success') {
+            processRecords(result.records);
+            if (pullBtnIcon) pullBtnIcon.classList.remove('fa-spin');
+            return;
+          }
+        }
+      } catch (fetchErr) {
+        console.warn('Fetch langsung disekat oleh sekatan CORS browser. Beralih ke mod JSONP...', fetchErr);
+      }
+
+      // Kaedah 2 (Paling Kebal): JSONP Script Injection (Tiada masalah CORS langsung)
+      try {
+        await new Promise((resolve, reject) => {
+          const callbackName = 'googleSheetCallback_' + Math.round(100000 * Math.random());
+          const script = document.createElement('script');
+          const timeout = setTimeout(() => {
+            cleanup();
+            reject(new Error('Masa tamat sambungan ke Google Sheet.'));
+          }, 12000);
+
+          function cleanup() {
+            clearTimeout(timeout);
+            if (script.parentNode) script.parentNode.removeChild(script);
+            delete window[callbackName];
+          }
+
+          window[callbackName] = function(data) {
+            cleanup();
+            if (data && data.status === 'success') {
+              processRecords(data.records);
+              resolve(data);
+            } else {
+              reject(new Error(data ? data.message : 'Format respons tidak sah'));
+            }
+          };
+
+          script.onerror = function() {
+            cleanup();
+            reject(new Error('Gagal memuat turun data melalui skrip.'));
+          };
+
+          script.src = `${WEBHOOK_URL}?callback=${callbackName}&t=${Date.now()}`;
+          document.body.appendChild(script);
+        });
+      } catch (err) {
+        console.error('Kedua-dua kaedah gagal menyegerak data dari Sheet:', err);
+        if (syncStatusText) syncStatusText.textContent = 'Gagal Segerak / Cache';
+        if (showNotification) {
+          showToast('error', 'Gagal Menarik Data', 'Sila pastikan Web App telah di-deploy semula dengan akses "Anyone".');
+        }
+      } finally {
+        if (pullBtnIcon) pullBtnIcon.classList.remove('fa-spin');
       }
     }
 
@@ -1227,12 +1317,6 @@
             <td class="py-2 px-2 text-slate-600 truncate" title="${escapeHtml(item.notes || '-')}">
               ${escapeHtml(item.notes || '-')}
             </td>
-            <td class="py-2 px-1 text-center">
-              ${item.synced 
-                ? '<span class="inline-flex items-center text-emerald-600 text-sm" title="Telah dihantar ke Google Sheet"><i class="fa-solid fa-cloud-check"></i></span>'
-                : `<button onclick="syncSingleRecord('${item.id}')" class="p-1 rounded bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-300 transition" title="Klik untuk hantar"><i class="fa-solid fa-cloud-arrow-up"></i></button>`
-              }
-            </td>
             <td class="py-2 px-1 text-center space-x-1">
               <button 
                 onclick="startEditRecord('${item.id}')" 
@@ -1261,16 +1345,73 @@
       document.getElementById('tableRecordCount').textContent = `Menunjukkan ${filtered.length} daripada ${purchases.length} rekod`;
     }
 
-    // Helper: Formatter for readable Date
+    // Helper: Formatter for readable Date (Hanya paparkan Tarikh sahaja format DD/MM/YY tanpa nama hari)
     function formatDisplayDate(dateStr) {
       if (!dateStr) return '-';
       try {
-        const parts = dateStr.split('-');
-        if (parts.length === 3) {
-          return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        // Buang nama hari (Ahad, Isnin, Sun, Mon, etc.) dan perkataan lain jika ada
+        let cleanStr = String(dateStr).trim();
+        cleanStr = cleanStr.replace(/^(Ahad|Isnin|Selasa|Rabu|Khamis|Jumaat|Sabtu|Sun|Mon|Tue|Wed|Thu|Fri|Sat)[a-zA-Z]*,?\s*/i, '');
+
+        let parsedDate = null;
+
+        if (dateStr instanceof Date) {
+          parsedDate = dateStr;
+        } else if (cleanStr.includes('GMT') || cleanStr.length > 20) {
+          parsedDate = new Date(cleanStr);
         }
-      } catch (e) {}
-      return dateStr;
+
+        if (parsedDate && !isNaN(parsedDate.getTime())) {
+          const d = String(parsedDate.getDate()).padStart(2, '0');
+          const m = String(parsedDate.getMonth() + 1).padStart(2, '0');
+          const yy = String(parsedDate.getFullYear()).slice(-2);
+          return `${d}/${m}/${yy}`;
+        }
+
+        // Buang bahagian masa ISO atau jarak (cth: 2026-11-01T00:00:00 atau 2026-11-01 10:00)
+        if (cleanStr.includes('T')) cleanStr = cleanStr.split('T')[0];
+        if (cleanStr.includes(' ') && (cleanStr.includes('-') || cleanStr.includes('/'))) {
+          cleanStr = cleanStr.split(' ')[0];
+        }
+
+        // Format YYYY-MM-DD -> DD/MM/YY
+        if (cleanStr.includes('-')) {
+          const parts = cleanStr.split('-');
+          if (parts.length === 3) {
+            const yearStr = parts[0].length === 4 ? parts[0] : parts[2];
+            const yy = yearStr.slice(-2);
+            const month = parts[1].padStart(2, '0');
+            const day = (parts[0].length === 4 ? parts[2] : parts[0]).padStart(2, '0');
+            return `${day}/${month}/${yy}`;
+          }
+        }
+
+        // Format DD/MM/YYYY atau YYYY/MM/DD -> DD/MM/YY
+        if (cleanStr.includes('/')) {
+          const parts = cleanStr.split('/');
+          if (parts.length === 3) {
+            if (parts[0].length === 4) { // YYYY/MM/DD
+              const yy = parts[0].slice(-2);
+              return `${parts[2].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${yy}`;
+            }
+            // DD/MM/YYYY atau DD/MM/YY
+            const yy = parts[2].slice(-2);
+            return `${parts[0].padStart(2, '0')}/${parts[1].padStart(2, '0')}/${yy}`;
+          }
+        }
+
+        // Sandaran akhir percubaan tarikh sah
+        const fallbackDate = new Date(cleanStr);
+        if (!isNaN(fallbackDate.getTime())) {
+          const d = String(fallbackDate.getDate()).padStart(2, '0');
+          const m = String(fallbackDate.getMonth() + 1).padStart(2, '0');
+          const yy = String(fallbackDate.getFullYear()).slice(-2);
+          return `${d}/${m}/${yy}`;
+        }
+      } catch (e) {
+        console.warn('Gagal memformat tarikh:', e);
+      }
+      return String(dateStr).split('T')[0].split(' ')[0];
     }
 
     // Helper: Escape HTML string
@@ -1331,6 +1472,9 @@
       initChart();
       updateKPIs();
       renderTable();
+
+      // Tarik dan kemaskini data secara automatik dari Google Sheet sebaik sahaja halaman dibuka
+      fetchDataFromGoogleSheet(false);
     };
   </script>
 </body>
